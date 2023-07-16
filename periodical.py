@@ -65,7 +65,7 @@ def main():
         game.handle_confirmations()
         update_game_data(game.get_game_data())
         update_phase_data({})
-    elif game.game_phase == 'done':
+    elif game.game_phase == 'finale':
         pass
     else:
         game.handle_posts()

@@ -43,6 +43,9 @@ class BaseGame:
     def assign_roles(self):
         raise Exception('Method [assign_roles] must be implemented in game class')
 
+    def send_role_pm(self, player):
+        raise Exception('Method [send_role_pm] must be implemented in game class')
+
     def get_game_data(self):
         return {'game_type': self.game_type(),
                 'game_phase': self.game_phase,
@@ -104,18 +107,29 @@ class BaseGame:
             self.assign_roles()
 
     def handle_confirmations(self):
-        # send role PM to first player in live players
-        # move player to dead players
+        logging.debug('Sending role PMs and processing confirmations')
 
-        # For each message in messages
-            # If it is a confirmation
-                # Add player to confirmed players
-                # Respond
+        if len(self.live_players) > 0:
+            player = self.live_players[0]
+            self.send_role_pm(player)
+            self.dead_players.append(player)
+            self.live_players.remove(player)
+
+        action_pattern = re.compile('!target u\/(\S*)( u\/(\S*))?')
+
+        for message in reddit.inbox.unread():
+            if 'confirm' in message.body.lower():
+                player = message.author.name.lower()
+                if player in self.dead_players:
+                    message.reply('You have confirmed.  The game will start once all players have confirmed.')
+                    self.confirmed_players.append(player)
+            message.mark_read()
 
         if len(self.confirmed_players) == self.player_limit():
             self.game_phase = 0
 
-            # add wolves to private sub
+            # Set the wolf sub to private and add the wolves
+            self.wolf_sub.mod.update(subreddit_type='private')
             for user in self.confirmed_players:
                 if 'Wolf' in self.roles['user']:
                     self.wolf_sub.contributor.add(user)
@@ -128,7 +142,8 @@ class BaseGame:
             self.wolf_post_id = wolf_phase_post.id
 
     def handle_votes(self):
-        # Get comments from submission in chronological order
+        logging.debug('Processing votes for Phase {}'.format(self.game_phase))
+
         submission = self.reddit.submission(self.main_post_id)
         submission.comments.replace_more(limit=None)
         submission.comments_sort = "old"
@@ -144,30 +159,36 @@ class BaseGame:
                     logging.info('Player {} declared a vote for {}'.format(player, target))
                     if target in self.live_players:
                         self.votes[player] = target
-                        comment.reply('Recorded u/{}\'s vote for u/{}'.format(player, target))
+                        comment.reply('Recorded u/{}\'s vote for u/{} for Phase {}'.format(player, target, self.game_phase))
                     else:
                         comment.reply('u/{} is not a valid vote target'.format(target))
                 self.last_comment_time = comment.created_utc
 
     def handle_actions(self):
-        logging.debug('Processing actions for current phase')
+        logging.debug('Processing actions for Phase {}'.format(self.game_phase))
 
-        # Get unread messages from inbox
+        action_pattern = re.compile('!target u\/(\S*)( u\/(\S*))?')
 
-        # for each message
-            # if it is an action
-                # add action to the actions payload
-            # mark it as read
-
-        # submit actions payload to the server
+        for message in reddit.inbox.unread():
+            if match := action_pattern.match(message.body.lower()):
+                player = message.author.name.lower()
+                if player in self.live_players:
+                    target1 = match.group(1).lower()
+                    # target2 = match.group(3).lower
+                    if target1 in self.live_players:
+                        self.actions[player] = [target1]
+                        message.reply('You have targeted u/{} for Phase {}'.format(target1, self.game_phase))
+                    else:
+                        message.reply('I\'m sorry, u/{} is already dead'.format(target1))
+                else:
+                    message.reply('I\'m sorry, you\'re already dead')
+            message.mark_read()
 
     def handle_turnover(self):
         main_sub_post = self.reddit.submission(self.main_post_id)
         post_time = datetime.fromtimestamp(main_sub_post.created_utc, timezone.utc)
         if datetime.now(timezone.utc) - post_time < timedelta(hours=self.phase_length_hours):
             return()
-
-        self.game_phase += 1
 
         # Lock the threads in the main and wolf sub
         main_sub_post.mod.lock()
@@ -179,9 +200,16 @@ class BaseGame:
         # Process actions
         # Update live/dead player lists
 
-        # Decide if game is over
-
-        main_phase_post = self.main_sub.submit(title=self.phase_post_title(), selftext=self.phase_post_text, send_replies=False)
-        self.main_post_id = main_phase_post.id
-        wolf_phase_post = self.wolf_sub.submit(title=self.phase_post_title(), selftext=self.phase_post_text, send_replies=False)
-        self.wolf_post_id = wolf_phase_post.id
+        if not self.game_over():
+            self.game_phase += 1
+            main_phase_post = self.main_sub.submit(title=self.phase_post_title(), selftext=self.phase_post_text, send_replies=False)
+            self.main_post_id = main_phase_post.id
+            wolf_phase_post = self.wolf_sub.submit(title='WOLF SUB ' + self.phase_post_title(), selftext=self.phase_post_text, send_replies=False)
+            self.wolf_post_id = wolf_phase_post.id
+        else:
+            self.game_phase = 'finale'
+            self.wolf_sub.mod.update(subreddit_type='public')
+            for user in self.confirmed_players:
+                if 'Wolf' in self.roles['user']:
+                    self.wolf_sub.contributor.remove(user)
+            # Post finale to main sub
