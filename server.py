@@ -59,20 +59,52 @@ def active_game_post():
     logging.debug('Active game data: {}'.format(active_game))
 
     if request.method == 'GET':
-        return(jsonify({'post_id': active_game['active_post_id']}))
+        return(jsonify({'post_id': active_game['post_id']}))
     elif request.method == 'POST':
-        logging.debug('POST request')
-        active_game['active_post_id'] = request.form['post_id']
+        active_game['post_id'] = request.form['post_id']
         json_helper.dump(active_game, active_game_fname)
         logging.debug('Active game data: {}'.format(active_game))
-        return(jsonify({'post_id': active_game['active_post_id']}))
+        return(jsonify({'post_id': active_game['post_id']}))
     else:
         logging.error('DAFUQ request')
-        abort(500)
+        abort(400)
 
-# TODO: Add route to fetch list of live players
+@app.route('/phase-data/', methods=['GET', 'POST'])
+def phase_data():
 
-# TODO: Add route for game config
+    global active_phase
+    logging.debug('Current phase data: {}'.format(active_phase))
+
+    if request.method == 'GET':
+        return(jsonify(active_phase))
+    elif request.method == 'POST':
+        if 'votes' in request.form:
+            active_phase['votes'] = json.loads(request.form['votes'])
+        if 'actions' in request.form:
+            active_phase['actions'] = json.loads(request.form['actions'])
+        json_helper.dump(active_phase, active_phase_fname)
+        return(jsonify(active_phase))
+    else:
+        logging.error('DAFUQ request')
+        abort(400)
+
+@app.route('/game-config/', methods=['GET', 'POST'])
+def game_config():
+    """
+    """
+
+    global active_game
+
+    if request.method == 'GET':
+        return(jsonify(active_game))
+    elif request.method == 'POST':
+        for key in request.form:
+            active_game[key] = request.form[key]
+        json_helper.dump(active_game, active_game_fname)
+        return(jsonify(active_game))
+    else:
+        logging.error('DAFUQ request')
+        abort(400)
 
 @app.route('/actions/', methods=['POST'])
 def handle_actions():
@@ -135,7 +167,7 @@ def handle_turnover():
     global active_game
 
     # Tally votes from active_phase
-    logging.debug('Tallying votes for phase {}'.format(active_game['active_post_id']))
+    logging.debug('Tallying votes for phase {}'.format(active_game['post_id']))
 
     # Handle inactivity removals
     logging.debug('Handling inactivity removals')
