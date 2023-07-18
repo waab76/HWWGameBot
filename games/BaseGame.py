@@ -1,4 +1,5 @@
 import logging
+import random
 
 class BaseGame:
     def __init__(self, reddit, game_data, phase_data):
@@ -37,7 +38,7 @@ class BaseGame:
     def phase_post_title(self):
         raise Exception('Method [signup_post_text] must be implemented in game class')
 
-    def phase_post_text(self):
+    def phase_post_text(self, sorted_votes, voted_out, wolf_kill):
         raise Exception('Method [signup_post_text] must be implemented in game class')
 
     def assign_roles(self):
@@ -45,6 +46,23 @@ class BaseGame:
 
     def send_role_pm(self, player):
         raise Exception('Method [send_role_pm] must be implemented in game class')
+
+    def handle_actions(self):
+        raise Exception('Method [handle_actions] must be implemented in game class')
+
+    def wolf_count(self):
+        wolf_count = 0
+        for player in self.live_players:
+            if "Wolf" in self.roles[player]:
+                wolf_count += 1
+        return wolf_count
+
+    def town_count(self):
+        town_count = 0
+        for player in self.live_players:
+            if "Town" in self.roles[player]:
+                town_count += 1
+        return town_count
 
     def get_game_data(self):
         return {'game_type': self.game_type(),
@@ -196,20 +214,42 @@ class BaseGame:
         wolf_sub_post.mod.lock()
 
         # Tally votes
-        # Handle inactivity removals
-        # Process actions
-        # Update live/dead player lists
+        vote_totals = {}
+        for player in live_players:
+            vote_totals[player] = 0
+        for player in live_players:
+            vote_totals[self.votes[player]] += 1
+        sorted_votes = sorted(vote_totals.items(), key=lambda x:x[1], reverse=True)
+        max_votes = sorted_votes[0][1]
+        tied_players = []
+        for entry in sorted_votes:
+            if entry[1] == max_votes:
+                tied_players.append(entry[0])
+        voted_out = random.choice(tied_players)
+        self.dead_players.append(voted_out)
+        self.live_players.remove(voted_out)
+        self.reddit.redditor(voted_out).message('You have been voted out', 'The people of the town have voted you out.')
 
-        if not self.game_over():
+        # Handle actions
+        wolf_kill = handle_actions()
+
+        if self.wolf_count() > 0 and self.town_count() > self.wolf_count():
             self.game_phase += 1
-            main_phase_post = self.main_sub.submit(title=self.phase_post_title(), selftext=self.phase_post_text, send_replies=False)
+            main_phase_post = self.main_sub.submit(title=self.phase_post_title(),
+                selftext=self.phase_post_text(sorted_votes, voted_out, wolf_kill), send_replies=False)
             self.main_post_id = main_phase_post.id
-            wolf_phase_post = self.wolf_sub.submit(title='WOLF SUB ' + self.phase_post_title(), selftext=self.phase_post_text, send_replies=False)
+            wolf_phase_post = self.wolf_sub.submit(title='WOLF SUB ' + self.phase_post_title(),
+                selftext=self.phase_post_text(sorted_votes, voted_out, wolf_kill), send_replies=False)
             self.wolf_post_id = wolf_phase_post.id
         else:
             self.game_phase = 'finale'
             self.wolf_sub.mod.update(subreddit_type='public')
             for user in self.confirmed_players:
-                if 'Wolf' in self.roles['user']:
+                if 'Wolf' in self.roles[user]:
                     self.wolf_sub.contributor.remove(user)
-            # Post finale to main sub
+            if self.wolf_count() == 0:
+                # Town won
+                finale_post = self.main_sub.submit(title='Finale', selftext='The last wolf {} has been voted out. The town has won!'.format(voted_out), send_replies=False)
+            else:
+                # Wolves won
+                finale_post = self.main_sub.submit(title='Finale', selftext='The wolves have won!', send_replies=False)
