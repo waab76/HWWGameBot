@@ -24,33 +24,24 @@ class Matrix6(BaseGame):
         return "New Game Signup - Matrix6"
 
     def signup_post_text(self):
-        return '''
-        Welcome to a new game of Automated Werewolves!
-
-        This will be a [Matrix6](https://www.mafiauniverse.com/forums/threads/6604-Modbot-Supported-Setups-Game-Formats) game.
-
-        **Matrix6** is a 9-player semi-open setup designed by Cogito Ergo Sum of
-        MafiaScum, where this is used as their newbie setup. No one is able to
-        know which setup the game has from the beginning, which can make
-        producing lies and fake claims interesting.
-
-        To set up the game, the bot will randomly select one of the rows or columns
-        from the following table in order to decide which PRs will be assigned:
-
-        . | A | B | C
-        -: | :-: | :-: | :-:
-        **1** | Town Jailkeeper | Vanilla Townie | Vanilla Wolf
-        **2** | Wolf Roleblocker | Town Seer | Town Doctor
-        **3** | 1-Shot Bulletproof Townie | Vanilla Wolf | Town Tracker
-
-        In addition to the roles from the table, 5 Vanilla Town and 1 Killer Wolf
-        will be assigned.
-
-        To sign up for the game, simply comment with the text `!signup`. Once 9
-        players have signed up, role assignment PMs will go out.
-
-        Phase 0 will be posted once all players have confirmed their role PMs.
-        '''
+        return ' Welcome to a new game of Automated Werewolves!\n\n' + \
+            'This will be a [Matrix6](https://www.mafiauniverse.com/forums/threads/6604-Modbot-Supported-Setups-Game-Formats) game.\n\n' + \
+            '**Matrix6** is a 9-player semi-open setup designed by Cogito Ergo Sum of ' + \
+            'MafiaScum, where this is used as their newbie setup. No one is able to ' + \
+            'know which setup the game has from the beginning, which can make ' + \
+            'producing lies and fake claims interesting.\n\n' + \
+            'To set up the game, the bot will randomly select one of the rows or columns ' + \
+            'from the following table in order to decide which PRs will be assigned:\n\n' + \
+            '. | A | B | C\n' + \
+            '-: | :-: | :-: | :-:\n' + \
+            '**1** | Town Jailkeeper | Vanilla Townie | Vanilla Wolf\n' + \
+            '**2** | Wolf Roleblocker | Town Seer | Town Doctor\n' + \
+            '**3** | 1-Shot Bulletproof Townie | Vanilla Wolf | Town Tracker\n\n' + \
+            'In addition to the roles from the table, 5 Vanilla Town and 1 Killer Wolf' + \
+            'will be assigned.\n\n' + \
+            'To sign up for the game, simply comment with the text `!signup`. Once 9 ' + \
+            'players have signed up, role assignment PMs will go out.\n\n' + \
+            'Phase 0 will be posted once all players have confirmed their role PMs.'
 
     def phase_post_title(self):
         return 'Phase {}'.format(self.game_phase)
@@ -117,18 +108,11 @@ class Matrix6(BaseGame):
                 that night, if any. You will not learn what type of Night Action your target has. \
                 Submit your Night Action each night by sending a PM to the bot account with the \
                 text: "!target u\YourTargetHere". You may change your target as many times \
-                as you want. The last action submitted will be used.'
+                as you want. The last action submitted will be used.'}
 
-            role_pm = '''
-            You role is **{}**!
+        role_pm = 'You role is **{}**!\n\n{}Please respond to this PM with the word `confirm` to confirm your participation in the game.'.format(self.roles[player], role_descriptions[self.roles[player]])
 
-            {}
-
-            Please respond to this PM with the word `confirm` to confirm your participation in the game.
-            '''.format(self.roles[player], role_descriptions[self.roles[player]])
-
-            self.reddit.redditor(player).message('Role Assignment', role_pm)
-        }
+        self.reddit.redditor(player).message('Role Assignment', role_pm)
 
     def handle_actions(self):
         role_holders = {}
@@ -195,10 +179,10 @@ class Matrix6(BaseGame):
                         self.reddit.redditor(wolf_kill).message('You Have Been Killed', 'The howling gets closer. You have been killed by the wolves.')
                         self.live_players.remove(wolf_kill)
                         self.dead_players.append(wolf_kill)
-        else if blocker in self.live_players:
+        elif blocker in self.live_players:
             roles[blocker] = 'Wolf Killer'
             self.send_role_pm(blocker)
-        else if 'Vanilla Wolf' in role_holders and role_holders['Vanilla Wolf'] in self.live_players:
+        elif 'Vanilla Wolf' in role_holders and role_holders['Vanilla Wolf'] in self.live_players:
             nilla = role_holders['Vanilla Wolf'][0]
             self.roles[nilla] = 'Killer Wolf'
             self.send_role_pm(nilla)

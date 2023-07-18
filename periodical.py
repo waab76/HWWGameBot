@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 import logging
 from logging.handlers import TimedRotatingFileHandler
 import Config
@@ -9,8 +9,6 @@ handlers.add(TimedRotatingFileHandler('HWWGameBot.log', when='W0', backupCount=4
 logging.basicConfig(level=logging.INFO, handlers=handlers, format='%(asctime)s %(levelname)s %(module)s:%(funcName)s %(message)s')
 logging.Formatter.formatTime = (lambda self, record, datefmt=None: datetime.fromtimestamp(record.created, timezone.utc).astimezone().isoformat(sep="T",timespec="milliseconds"))
 
-import praw
-import re
 import requests
 from games.Matrix6 import Matrix6
 from games.Test import Test
@@ -54,17 +52,14 @@ def main():
         logging.info('Init new game')
         game.init_new_game()
         update_game_data(game.get_game_data())
-        update_phase_data({})
     elif game.game_phase == 'signup':
         logging.info('Handle signups')
         game.handle_signups()
         update_game_data(game.get_game_data())
-        update_phase_data({})
     elif game.game_phase == 'confirmation':
         logging.info('Handle confirmations')
         game.handle_confirmations()
         update_game_data(game.get_game_data())
-        update_phase_data({})
     elif game.game_phase == 'finale':
         pass
     else:
