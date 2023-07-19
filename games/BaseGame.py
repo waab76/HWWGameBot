@@ -24,8 +24,8 @@ class BaseGame:
         logging.debug('Building game with game_data {} and phase data {}'.format(game_data, phase_data))
         self.game_phase = 'init' if 'game_phase' not in game_data else game_data['game_phase']
         self.phase_length_hours = 24 if 'phase_length_hours' not in game_data else int(game_data['phase_length_hours'])
-        self.main_sub_name = 'HWWBotTest' if 'main_sub_name' not in game_data else game_data['main_sub_name']
-        self.wolf_sub_name = 'HWWBotTest' if 'wolf_sub_name' not in game_data else game_data['wolf_sub_name']
+        self.main_sub_name = 'AutomatedWerewolves' if 'main_sub_name' not in game_data else game_data['main_sub_name']
+        self.wolf_sub_name = 'AutomatedWolfSub' if 'wolf_sub_name' not in game_data else game_data['wolf_sub_name']
         self.main_post_id = '' if 'main_post_id' not in game_data else game_data['main_post_id']
         self.wolf_post_id = '' if 'wolf_post_id' not in game_data else game_data['wolf_post_id']
         self.confirmed_players = [] if 'confirmed_players' not in game_data else game_data['confirmed_players']
@@ -235,10 +235,11 @@ class BaseGame:
 
         # Tally votes
         vote_totals = {}
-        for player in self.live_players:
-            vote_totals[player] = 0
         for player in self.votes:
-            vote_totals[self.votes[player]] += 1
+            if self.votes[player] not in vote_totals:
+                vote_totals[self.votes[player]] = 1
+            else:
+                vote_totals[self.votes[player]] += 1
         sorted_votes = sorted(vote_totals.items(), key=lambda x:x[1], reverse=True)
         max_votes = sorted_votes[0][1]
         tied_players = []

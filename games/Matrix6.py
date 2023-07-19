@@ -50,12 +50,13 @@ class Matrix6(BaseGame):
         phase_post = '##Phase {}\n\n'.format(self.game_phase)
         phase_post += 'Player | Votes Against\n:- | -:\n'
         for entry in sorted_votes:
-            phase_post += '{} | {}'.format(entry[0], entry[1])
+            phase_post += '{} | {}\n'.format(entry[0], entry[1])
         phase_post += '\n\n'
         voted_out_align = 'the Town' if 'Town' in self.roles[voted_out] else 'the Wolves'
         phase_post += '{} has been voted out. They were affiliated with {}.\n\n'.format(voted_out, voted_out_align)
         if len(wolf_kill) > 0:
-            phase_post += '{} has been killed in the night. They were affiliated with the Town'
+            wolf_kill_align = 'the Town' if 'Town' in self.roles[wolf_kill] else 'the Wolves'
+            phase_post += '{} has been killed in the night. They were affiliated with {}'.format(wolf_kill, wolf_kill_align)
         return phase_post
 
     def assign_roles(self):
@@ -169,7 +170,7 @@ class Matrix6(BaseGame):
         if killer in self.live_players:
             if killer in self.actions:
                 kill_target = self.actions[killer]
-                if not kill_target in [jailed, doctored] and kill_target in self.live_players:
+                if not kill_target in [in_jail, doctored] and kill_target in self.live_players:
                     bulletproof = '' if not 'Bulletproof Townie' in role_holders else role_holders['Bulletproof Townie'][0]
                     if kill_target == bulletproof:
                         self.roles[bulletproof] = 'Vanilla Town'
