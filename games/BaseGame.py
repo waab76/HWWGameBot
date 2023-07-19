@@ -3,6 +3,22 @@ import random
 import re
 from datetime import datetime, timedelta, timezone
 
+p1_main_text = '##Welcome to Phase 1!\n\n' + \
+               'You are now free to begin having game discussions.\n\n' + \
+               'To submit your votes, simply include the text "!vote u/yourVoteTarget" in a comment like so:\n\n' + \
+               '`!vote u/AutomatedWerewolvesBot`\n\n' + \
+               'To submit your action, send a PM to the host bot account with the text "!target u/yourActionTarget" ' + \
+               '(the subject line doesn\'t matter).\n\nFor convenience, you can use this [ACTION LINK]' + \
+               '(https://www.reddit.com/message/compose/?to=shadows_producer&subject=Action&message=!target:%20u/)\n\n' + \
+               '##Good luck!'
+p1_wolf_text = p1_main_text = '##Welcome to Phase 1, wolves!\n\n' + \
+               'You are now free to begin making wolfy plans.\n\n' + \
+               'Vote submission only works in the main sub. The bot does not monitor wolf sub comments.\n\n' + \
+               'To submit your action, send a PM to the host bot account with the text "!target u/yourActionTarget" ' + \
+               '(the subject line doesn\'t matter).\n\nFor convenience, you can use this [ACTION LINK]' + \
+               '(https://www.reddit.com/message/compose/?to=shadows_producer&subject=Action&message=!target:%20u/)\n\n' + \
+               '##Good luck!'
+
 class BaseGame:
     def __init__(self, reddit, game_data, phase_data):
         logging.debug('Building game with game_data {} and phase data {}'.format(game_data, phase_data))
@@ -157,9 +173,9 @@ class BaseGame:
                 self.live_players.append(user)
             self.dead_players = []
 
-            main_phase_post = self.main_sub.submit(title=self.phase_post_title(), selftext=self.phase_post_text, send_replies=False)
+            main_phase_post = self.main_sub.submit(title=self.phase_post_title(), selftext=p1_main_text, send_replies=False)
             self.main_post_id = main_phase_post.id
-            wolf_phase_post = self.wolf_sub.submit(title="WOLF SUB " + self.phase_post_title(), selftext=self.phase_post_text, send_replies=False)
+            wolf_phase_post = self.wolf_sub.submit(title="WOLF SUB " + self.phase_post_title(), selftext=p1_wolf_text, send_replies=False)
             self.wolf_post_id = wolf_phase_post.id
 
     def handle_votes(self):
