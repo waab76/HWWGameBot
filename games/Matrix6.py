@@ -60,10 +60,10 @@ class Matrix6(BaseGame):
 
     def assign_roles(self):
         power_roles = random.choice(role_lists)
-        random.shuffle(live_players)
+        random.shuffle(self.live_players)
 
         for i in range(9):
-            self.roles[live_players[i]] = power_roles[i]
+            self.roles[self.live_players[i]] = power_roles[i]
 
     def send_role_pm(self, player):
         role_descriptions = {

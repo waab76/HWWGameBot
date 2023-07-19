@@ -9,27 +9,32 @@ handlers.add(TimedRotatingFileHandler('HWWGameBot.log', when='W0', backupCount=4
 logging.basicConfig(level=logging.INFO, handlers=handlers, format='%(asctime)s %(levelname)s %(module)s:%(funcName)s %(message)s')
 logging.Formatter.formatTime = (lambda self, record, datefmt=None: datetime.fromtimestamp(record.created, timezone.utc).astimezone().isoformat(sep="T",timespec="milliseconds"))
 
+import json
 import requests
 from games.Matrix6 import Matrix6
 from games.Test import Test
 
 request_url = 'http://0.0.0.0:8800'
 
-def get_game_data():
+def get_game_data() -> dict:
     payload = requests.get(request_url + '/game-data/').json()
+    if isinstance(payload, str):
+        payload = json.loads(payload)
     logging.debug('Active game data is {}'.format(payload))
     return payload
 
 def update_game_data(updates):
-    requests.post(request_url + '/game-data/', updates)
+    requests.post(request_url + '/game-data/', {'json': json.dumps(updates)})
 
-def get_phase_data():
+def get_phase_data() -> dict:
     payload = requests.get(request_url + '/phase-data/').json()
+    if isinstance(payload, str):
+        payload = json.loads(payload)
     logging.debug('Current phase data is {}'.format(payload))
     return payload
 
 def update_phase_data(updates):
-    requests.post(request_url + '/phase-data/', updates)
+    requests.post(request_url + '/phase-data/', {'json': json.dumps(updates)})
 
 def main():
     config = Config.Config('myconfig')
@@ -63,6 +68,7 @@ def main():
     elif game.game_phase == 'finale':
         pass
     else:
+        logging.info('Handle game phase')
         game.handle_posts()
         game.handle_actions()
         game.handle_turnover()

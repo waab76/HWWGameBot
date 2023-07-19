@@ -58,10 +58,7 @@ def phase_data():
     if request.method == 'GET':
         return(jsonify(active_phase))
     elif request.method == 'POST':
-        if 'votes' in request.form:
-            active_phase['votes'] = json.loads(request.form['votes'])
-        if 'actions' in request.form:
-            active_phase['actions'] = json.loads(request.form['actions'])
+        active_phase = request.form['json']
         json_helper.dump(active_phase, active_phase_fname)
         return(jsonify(active_phase))
     else:
@@ -79,8 +76,7 @@ def game_config():
     if request.method == 'GET':
         return(jsonify(active_game))
     elif request.method == 'POST':
-        for key in request.form:
-            active_game[key] = request.form[key]
+        active_game = request.form['json']
         json_helper.dump(active_game, active_game_fname)
         return(jsonify(active_game))
     else:

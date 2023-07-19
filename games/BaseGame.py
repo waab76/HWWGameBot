@@ -3,7 +3,7 @@ import random
 
 class BaseGame:
     def __init__(self, reddit, game_data, phase_data):
-        logging.info('Building game with game_data {} and phase data {}'.format(game_data, phase_data))
+        logging.debug('Building game with game_data {} and phase data {}'.format(game_data, phase_data))
         self.game_phase = 'init' if 'game_phase' not in game_data else game_data['game_phase']
         self.phase_length_hours = 1 if 'phase_length_hours' not in game_data else game_data['phase_length_hours']
         self.main_sub_name = 'HWWBotTest' if 'main_sub_name' not in game_data else game_data['main_sub_name']
@@ -89,6 +89,7 @@ class BaseGame:
         signup_post = self.main_sub.submit(title=signup_title, selftext=signup_text, send_replies=False)
         self.main_post_id = signup_post.id
         self.last_comment_time = signup_post.created_utc
+        self.game_phase = 'signup'
 
     def handle_signups(self):
         # Get comments from submission in chronological order
@@ -114,10 +115,10 @@ class BaseGame:
 
         if len(self.live_players) == self.player_limit():
             # lock signups
-            signup_post.mod.lock()
+            submission.mod.lock()
             self.game_phase = 'confirmation'
             confirmation_post = self.main_sub.submit(title='Confirmation Phase',
-                selftext='Role PMs are being sent. Feel free to chat amongst yourselves while we wait for everyone to confirm.',
+                selftext='Role PMs are being sent. Feel free to chat amongst yourselves while we wait for everyone to confirm. Game talk is not allowed.',
                 send_replies=False)
             self.main_post_id = confirmation_post.id
             self.last_comment_time = confirmation_post.created_utc
