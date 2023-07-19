@@ -23,7 +23,7 @@ class BaseGame:
     def __init__(self, reddit, game_data, phase_data):
         logging.debug('Building game with game_data {} and phase data {}'.format(game_data, phase_data))
         self.game_phase = 'init' if 'game_phase' not in game_data else game_data['game_phase']
-        self.phase_length_hours = 1 if 'phase_length_hours' not in game_data else int(game_data['phase_length_hours'])
+        self.phase_length_hours = 24 if 'phase_length_hours' not in game_data else int(game_data['phase_length_hours'])
         self.main_sub_name = 'HWWBotTest' if 'main_sub_name' not in game_data else game_data['main_sub_name']
         self.wolf_sub_name = 'HWWBotTest' if 'wolf_sub_name' not in game_data else game_data['wolf_sub_name']
         self.main_post_id = '' if 'main_post_id' not in game_data else game_data['main_post_id']
@@ -235,9 +235,9 @@ class BaseGame:
 
         # Tally votes
         vote_totals = {}
-        for player in live_players:
+        for player in self.live_players:
             vote_totals[player] = 0
-        for player in live_players:
+        for player in self.votes:
             vote_totals[self.votes[player]] += 1
         sorted_votes = sorted(vote_totals.items(), key=lambda x:x[1], reverse=True)
         max_votes = sorted_votes[0][1]
@@ -251,7 +251,7 @@ class BaseGame:
         self.reddit.redditor(voted_out).message('You have been voted out', 'The people of the town have voted you out.')
 
         # Handle actions
-        wolf_kill = process_actions()
+        wolf_kill = self.process_actions()
 
         if self.wolf_count() > 0 and self.town_count() > self.wolf_count():
             self.game_phase += 1
@@ -273,3 +273,5 @@ class BaseGame:
             else:
                 # Wolves won
                 finale_post = self.main_sub.submit(title='Finale', selftext='The wolves have won!', send_replies=False)
+        self.votes = {}
+        self.actions = {}
