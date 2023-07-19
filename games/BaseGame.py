@@ -1,11 +1,13 @@
 import logging
 import random
+import re
+from datetime import datetime, timedelta, timezone
 
 class BaseGame:
     def __init__(self, reddit, game_data, phase_data):
         logging.debug('Building game with game_data {} and phase data {}'.format(game_data, phase_data))
         self.game_phase = 'init' if 'game_phase' not in game_data else game_data['game_phase']
-        self.phase_length_hours = 1 if 'phase_length_hours' not in game_data else game_data['phase_length_hours']
+        self.phase_length_hours = 1 if 'phase_length_hours' not in game_data else int(game_data['phase_length_hours'])
         self.main_sub_name = 'HWWBotTest' if 'main_sub_name' not in game_data else game_data['main_sub_name']
         self.wolf_sub_name = 'HWWBotTest' if 'wolf_sub_name' not in game_data else game_data['wolf_sub_name']
         self.main_post_id = '' if 'main_post_id' not in game_data else game_data['main_post_id']
@@ -16,8 +18,8 @@ class BaseGame:
         self.dead_players = [] if 'dead_players' not in game_data else game_data['dead_players']
         self.last_comment_time = 0 if 'last_comment_time' not in game_data else game_data['last_comment_time']
 
-        self.votes = [] if 'votes' not in phase_data else phase_data['votes']
-        self.actions = [] if 'actions' not in phase_data else phase_data['actions']
+        self.votes = {} if 'votes' not in phase_data else phase_data['votes']
+        self.actions = {} if 'actions' not in phase_data else phase_data['actions']
 
         self.reddit = reddit
         self.main_sub = reddit.subreddit(self.main_sub_name)
@@ -47,7 +49,7 @@ class BaseGame:
     def send_role_pm(self, player):
         raise Exception('Method [send_role_pm] must be implemented in game class')
 
-    def handle_actions(self):
+    def process_actions(self):
         raise Exception('Method [handle_actions] must be implemented in game class')
 
     def wolf_count(self):
@@ -126,38 +128,38 @@ class BaseGame:
             self.assign_roles()
 
     def handle_confirmations(self):
-        logging.debug('Sending role PMs and processing confirmations')
+        logging.info('Sending role PMs and processing confirmations')
 
         if len(self.live_players) > 0:
             player = self.live_players[0]
+            logging.info('Sending role PM to {}'.format(player))
             self.send_role_pm(player)
             self.dead_players.append(player)
             self.live_players.remove(player)
 
-        action_pattern = re.compile('!target u\/(\S*)( u\/(\S*))?')
-
-        for message in reddit.inbox.unread():
+        for message in self.reddit.inbox.unread():
             if 'confirm' in message.body.lower():
                 player = message.author.name.lower()
+                logging.info('Confirmation from {}'.format(player))
                 if player in self.dead_players:
                     message.reply('You have confirmed.  The game will start once all players have confirmed.')
                     self.confirmed_players.append(player)
             message.mark_read()
 
         if len(self.confirmed_players) == self.player_limit():
-            self.game_phase = 0
+            self.game_phase = 1
 
             # Set the wolf sub to private and add the wolves
             self.wolf_sub.mod.update(subreddit_type='private')
             for user in self.confirmed_players:
-                if 'Wolf' in self.roles['user']:
+                if 'Wolf' in self.roles[user]:
                     self.wolf_sub.contributor.add(user)
                 self.live_players.append(user)
             self.dead_players = []
 
             main_phase_post = self.main_sub.submit(title=self.phase_post_title(), selftext=self.phase_post_text, send_replies=False)
             self.main_post_id = main_phase_post.id
-            wolf_phase_post = self.wolf_sub.submit(title=self.phase_post_title(), selftext=self.phase_post_text, send_replies=False)
+            wolf_phase_post = self.wolf_sub.submit(title="WOLF SUB " + self.phase_post_title(), selftext=self.phase_post_text, send_replies=False)
             self.wolf_post_id = wolf_phase_post.id
 
     def handle_votes(self):
@@ -188,22 +190,23 @@ class BaseGame:
 
         action_pattern = re.compile('!target u\/(\S*)( u\/(\S*))?')
 
-        for message in reddit.inbox.unread():
+        for message in self.reddit.inbox.unread():
             if match := action_pattern.match(message.body.lower()):
                 player = message.author.name.lower()
                 if player in self.live_players:
-                    target1 = match.group(1).lower()
-                    # target2 = match.group(3).lower
-                    if target1 in self.live_players:
-                        self.actions[player] = [target1]
-                        message.reply('You have targeted u/{} for Phase {}'.format(target1, self.game_phase))
+                    target = match.group(1).lower()
+                    if target in self.live_players:
+                        logging.info('{} targeting {}'.format(player, target))
+                        self.actions[player] = target
+                        message.reply('You have targeted u/{} for Phase {}'.format(target, self.game_phase))
                     else:
-                        message.reply('I\'m sorry, u/{} is already dead'.format(target1))
+                        message.reply('I\'m sorry, u/{} is already dead'.format(target))
                 else:
                     message.reply('I\'m sorry, you\'re already dead')
             message.mark_read()
 
     def handle_turnover(self):
+        logging.info('Processing turnover')
         main_sub_post = self.reddit.submission(self.main_post_id)
         post_time = datetime.fromtimestamp(main_sub_post.created_utc, timezone.utc)
         if datetime.now(timezone.utc) - post_time < timedelta(hours=self.phase_length_hours):
@@ -232,7 +235,7 @@ class BaseGame:
         self.reddit.redditor(voted_out).message('You have been voted out', 'The people of the town have voted you out.')
 
         # Handle actions
-        wolf_kill = handle_actions()
+        wolf_kill = process_actions()
 
         if self.wolf_count() > 0 and self.town_count() > self.wolf_count():
             self.game_phase += 1

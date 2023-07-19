@@ -69,7 +69,7 @@ def main():
         pass
     else:
         logging.info('Handle game phase')
-        game.handle_posts()
+        game.handle_votes()
         game.handle_actions()
         game.handle_turnover()
         update_game_data(game.get_game_data())

@@ -114,7 +114,7 @@ class Matrix6(BaseGame):
 
         self.reddit.redditor(player).message('Role Assignment', role_pm)
 
-    def handle_actions(self):
+    def process_actions(self):
         role_holders = {}
         for player in self.live_players:
             if self.roles[player] in role_holders:
