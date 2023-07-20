@@ -191,7 +191,8 @@ class BaseGame:
         for comment in comments:
             if comment.created_utc > self.last_comment_time:
                 player = comment.author.name.lower()
-                if match := vote_pattern.match(comment.body.lower()):
+                match = vote_pattern.match(comment.body.lower())
+                if match:
                     target = match.group(1).lower()
                     logging.info('Player {} declared a vote for {}'.format(player, target))
                     if target in self.live_players:
@@ -207,7 +208,8 @@ class BaseGame:
         action_pattern = re.compile('!target u\/(\S*)( u\/(\S*))?')
 
         for message in self.reddit.inbox.unread():
-            if match := action_pattern.match(message.body.lower()):
+            match = action_pattern.match(message.body.lower())
+            if match:
                 player = message.author.name.lower()
                 if player in self.live_players:
                     target = match.group(1).lower()
