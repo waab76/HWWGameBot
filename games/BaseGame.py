@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 p1_main_text = '##Welcome to Phase 1!\n\n' + \
                'You are now free to begin having game discussions.\n\n' + \
                'To submit your votes, simply include the text "!vote u/yourVoteTarget" in a comment like so:\n\n' + \
-               '`!vote u/AutomatedWerewolvesBot`\n\n' + \
+               '`!vote u/AutoWolfBot`\n\n' + \
                'To submit your action, send a PM to the host bot account with the text "!target u/yourActionTarget" ' + \
                '(the subject line doesn\'t matter).\n\nFor convenience, you can use this [ACTION LINK]' + \
                '(https://www.reddit.com/message/compose/?to=shadows_producer&subject=Action&message=!target:%20u/)\n\n' + \
