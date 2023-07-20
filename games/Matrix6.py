@@ -73,14 +73,14 @@ class Matrix6(BaseGame):
                 prevent that player from being able to successfully use their Night Action that night. \
                 You will not learn whether your target was successfully protected from any kills, nor \
                 will you learn whether your target had a Night Action. Submit your Night Action each \
-                night by sending a PM to the bot account with the text: "!target u\YourTargetHere". \
+                night by sending a PM to the bot account with the text: "!target u/YourTargetHere". \
                 You may change your target as many times as you want. The last action submitted will be \
                 used. If you do not submit an action, you will forego your action on that night.',
             'Wolf Roleblocker': 'As Wolf Roleblocker, you have access to the Roleblock Night Action. \
                 Roleblocking another player prevents them from being able to successfully use any Night \
                 Action that they might have that night. You will not learn whether your target had a Night \
                 Action. Submit your Night Action each night by sending a PM to the bot account with the \
-                text: "!target u\YourTargetHere". You may change your target as many times as you want. \
+                text: "!target u/YourTargetHere". You may change your target as many times as you want. \
                 The last action submitted will be used. If you do not submit an action, you will forego \
                 your action on that night. \n\n If the Killer Wolf is voted out of the game, you will \
                 replace them as Killer Wolf, losing your Roleblock ability',
@@ -91,24 +91,24 @@ class Matrix6(BaseGame):
             'Killer Wolf': 'As Killer Wolf, you have access to the Factional Night Kill Night Action. \
                 Players targeted with this action will die at the end of the Night unless protected. \
                 Submit your Night Action each night by sending a PM to the bot account with the text: \
-                "!target u\YourTargetHere". You may change your target as many times as you want. \
+                "!target u/YourTargetHere". You may change your target as many times as you want. \
                 The last action submitted will be used.',
             'Town Seer': 'As Town Seer, you have access to the Alignment Inspection Night Action. \
                 Alignment Inspection will reveal a target\'s alignment. Submit your Night Action each \
-                night by sending a PM to the bot account with the text: "!target u\YourTargetHere". \
+                night by sending a PM to the bot account with the text: "!target u/YourTargetHere". \
                 You may change your target as many times as you want. The last action submitted will be used.',
             'Vanilla Wolf': 'As a Vanilla Wolf, you have no Night Action. If the Killer Wolf is voted \
                 out of the game, you will replace them as Killer Wolf',
             'Town Doctor': 'As Town Doctor, you have access to the Protection Night Action. \
                 Protection will protect your target from being killed. You will not learn whether \
                 you successfully protected someone. Submit your Night Action each \
-                night by sending a PM to the bot account with the text: "!target u\YourTargetHere". \
+                night by sending a PM to the bot account with the text: "!target u/YourTargetHere". \
                 You may change your target as many times as you want. The last action submitted will be used.',
             'Town Tracker': 'As Town Tracker, you have access to the Tracking Night Action. \
                 Tracking another player informs you who that player used a Night Action on \
                 that night, if any. You will not learn what type of Night Action your target has. \
                 Submit your Night Action each night by sending a PM to the bot account with the \
-                text: "!target u\YourTargetHere". You may change your target as many times \
+                text: "!target u/YourTargetHere". You may change your target as many times \
                 as you want. The last action submitted will be used.'}
 
         role_pm = 'You role is **{}**!\n\n{}Please respond to this PM with the word `confirm` to confirm your participation in the game.'.format(self.roles[player], role_descriptions[self.roles[player]])

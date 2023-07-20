@@ -205,7 +205,7 @@ class BaseGame:
     def handle_actions(self):
         logging.debug('Processing actions for Phase {}'.format(self.game_phase))
 
-        action_pattern = re.compile('!target u\/(\S*)( u\/(\S*))?')
+        action_pattern = re.compile('!target u\/(\S*)')
 
         for message in self.reddit.inbox.unread():
             match = action_pattern.match(message.body.lower())
