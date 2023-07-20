@@ -144,7 +144,7 @@ class BaseGame:
             self.assign_roles()
 
     def handle_confirmations(self):
-        logging.info('Sending role PMs and processing confirmations')
+        logging.debug('Sending role PMs and processing confirmations')
 
         if len(self.live_players) > 0:
             player = self.live_players[0]
@@ -158,7 +158,7 @@ class BaseGame:
                 player = message.author.name.lower()
                 logging.info('Confirmation from {}'.format(player))
                 if player in self.dead_players:
-                    message.reply('You have confirmed.  The game will start once all players have confirmed.')
+                    message.reply('You have confirmed. The game will start once all players have confirmed.')
                     self.confirmed_players.append(player)
             message.mark_read()
 
