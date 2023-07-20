@@ -1,5 +1,6 @@
 import logging
 import random
+from datetime import datetime, timedelta, timezone
 from games.BaseGame import BaseGame
 
 role_lists = [['Town Jailkeeper', 'Wolf Roleblocker', 'Bulletproof Townie', 'Vanilla Town', 'Vanilla Town', 'Vanilla Town', 'Killer Wolf', 'Vanilla Town', 'Vanilla Town'],
@@ -56,7 +57,12 @@ class Matrix6(BaseGame):
         phase_post += '{} has been voted out. They were affiliated with {}.\n\n'.format(voted_out, voted_out_align)
         if len(wolf_kill) > 0:
             wolf_kill_align = 'the Town' if 'Town' in self.roles[wolf_kill] else 'the Wolves'
-            phase_post += '{} has been killed in the night. They were affiliated with {}'.format(wolf_kill, wolf_kill_align)
+            phase_post += '{} has been killed in the night. They were affiliated with {}\n\n'.format(wolf_kill, wolf_kill_align)
+
+        turnover_time = datetime.now() + timedelta(hours=self.phase_length_hours)
+        iso_str = turnover_time.strftime('%Y%m%dT%H%M')
+        phase_post += 'Countdown to turnover: [LINK](https://www.timeanddate.com/countdown/generic?iso={}&msg=Automated+Werewolves+Phase+End+&font=sanserif&csz=1)'.format(iso_str)
+
         return phase_post
 
     def assign_roles(self):
