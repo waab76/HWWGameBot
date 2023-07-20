@@ -127,12 +127,15 @@ class Matrix6(BaseGame):
         blocker = '' if not 'Wolf Roleblocker' in role_holders else role_holders['Wolf Roleblocker'][0]
         if blocker in self.live_players and blocker in self.actions:
             block_target = '' if blocker not in self.live_players or blocker not in self.actions else self.actions[blocker]
-            self.actions[block_target] = ''
+            if len(block_target) > 0:
+                logging.info('The Wolf Roleblocker {} has blocked {}'.format(blocker, block_target))
+                self.actions[block_target] = ''
 
         # Town Jailkeeper
         keeper = '' if not 'Town Jailkeeper' in role_holders else role_holders['Town Jailkeeper'][0]
         in_jail = ''
         if keeper in self.live_players and keeper in self.actions:
+            logging.info('The Town Jailkeeper {} has jailed {}'.format(keeper, in_jail))
             in_jail = self.actions[keeper]
             self.actions[in_jail] = ''
 
@@ -141,17 +144,22 @@ class Matrix6(BaseGame):
         if seer in self.live_players and seer in self.actions:
             seen = self.actions[seer]
             if 'Wolf' in self.roles[seen]:
+                logging.info('The Town Seer {} has seen the wolf {}'.format(seer, seen))
                 self.reddit.redditor(seer).message('Seer Result', '{} is a Wolf'.format(seen))
             elif 'Town' in self.roles[seen]:
+                logging.info('The Town Seer {} has seen the townie {}'.format(seer, seen))
                 self.reddit.redditor(seer).message('Seer Result', '{} is Town'.format(seen))
             else:
+                logging.info('The Town Seer {} has failed'.format(seer))
                 self.reddit.redditor(seer_target[1]).message('Action Failed', 'Your action has failed')
 
         # Town Doctor
         doc = '' if not 'Town Doctor' in role_holders else role_holders['Town Doctor'][0]
         doctored = ''
         if doc in self.live_players and doc in self.actions:
-            doctored = self.actions[doc]
+            if len(doctored) > 0:
+                logging.info('The Town Doctor {} has protected {}'.format(doc, doctored))
+                doctored = self.actions[doc]
 
         # Town Tracker
         tracker = '' if not 'Town Tracker' in role_holders else role_holders['Town Tracker'][0]
@@ -159,8 +167,10 @@ class Matrix6(BaseGame):
             tracked = self.actions[tracker]
             if tracked in self.live_players:
                 if tracked in self.actions and not '' == self.actions[tracked]:
+                    logging.info('The Town Tracker {} has seen {} target {}'.format(tracker, tracked, self.actions[tracked]))
                     self.reddit.redditor(tracker_target[1]).message('Tracker Result', '{}\'s Night Action target was {}'.format(tracked, self.actions[tracked]))
                 else:
+                    logging.info('The Town Tracker {} did not see {} target anyone'.format(tracker, tracked))
                     self.reddit.redditor(tracker_target[1]).message('Tracker Result', '{} did not take a Night Action'.format(tracked))
 
         # Killer Wolf
@@ -173,18 +183,22 @@ class Matrix6(BaseGame):
                 if not kill_target in [in_jail, doctored] and kill_target in self.live_players:
                     bulletproof = '' if not 'Bulletproof Townie' in role_holders else role_holders['Bulletproof Townie'][0]
                     if kill_target == bulletproof:
+                        logging.info('The Killer Wolf {} has hit the Bulletproof Townie {}'.format(killer, bulletproof))
                         self.roles[bulletproof] = 'Vanilla Town'
                         self.reddit.redditor(bulletproof).message('Close Call', 'The wolves nearly got you. That was close. You are now Vanilla Town')
                     else:
+                        logging.info('The Killer Wolf {} has killed {}'.format(killer_wolf, kill_target))
                         wolf_kill = kill_target
                         self.reddit.redditor(wolf_kill).message('You Have Been Killed', 'The howling gets closer. You have been killed by the wolves.')
                         self.live_players.remove(wolf_kill)
                         self.dead_players.append(wolf_kill)
         elif blocker in self.live_players:
-            roles[blocker] = 'Wolf Killer'
+            logging.info('The Killer Wolf {} is dead. The Wolf Roleblocker {} is being promoted'.format(killer, blocker))
+            self.roles[blocker] = 'Wolf Killer'
             self.send_role_pm(blocker)
         elif 'Vanilla Wolf' in role_holders and role_holders['Vanilla Wolf'] in self.live_players:
             nilla = role_holders['Vanilla Wolf'][0]
+            logging.info('The Killer Wolf {} is dead. The Vanilla Wolf {} is being promoted'.format(killer, nilla))
             self.roles[nilla] = 'Killer Wolf'
             self.send_role_pm(nilla)
 

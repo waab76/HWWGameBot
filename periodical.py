@@ -58,17 +58,17 @@ def main():
         game.init_new_game()
         update_game_data(game.get_game_data())
     elif game.game_phase == 'signup':
-        logging.info('Handle signups')
+        logging.debug('Handle signups')
         game.handle_signups()
         update_game_data(game.get_game_data())
     elif game.game_phase == 'confirmation':
-        logging.info('Handle confirmations')
+        logging.debug('Handle confirmations')
         game.handle_confirmations()
         update_game_data(game.get_game_data())
     elif game.game_phase == 'finale':
         pass
     else:
-        logging.info('Handle game phase')
+        logging.debug('Handle game phase')
         game.handle_votes()
         game.handle_actions()
         game.handle_turnover()

@@ -194,8 +194,8 @@ class BaseGame:
                 match = vote_pattern.match(comment.body.lower())
                 if match:
                     target = match.group(1).lower()
-                    logging.info('Player {} declared a vote for {}'.format(player, target))
                     if target in self.live_players:
+                        logging.info('Player {} declared a vote for {}'.format(player, target))
                         self.votes[player] = target
                         comment.reply('Recorded u/{}\'s vote for u/{} for Phase {}'.format(player, target, self.game_phase))
                     else:
@@ -214,7 +214,7 @@ class BaseGame:
                 if player in self.live_players:
                     target = match.group(1).lower()
                     if target in self.live_players:
-                        logging.info('{} targeting {}'.format(player, target))
+                        logging.info('Player {}::{} targeting {}'.format(player, self.roles[player], target))
                         self.actions[player] = target
                         message.reply('You have targeted u/{} for Phase {}'.format(target, self.game_phase))
                     else:
@@ -249,6 +249,7 @@ class BaseGame:
             if entry[1] == max_votes:
                 tied_players.append(entry[0])
         voted_out = random.choice(tied_players)
+        logging.info('Player {} has been voted out'.format(voted_out))
         self.dead_players.append(voted_out)
         self.live_players.remove(voted_out)
         self.reddit.redditor(voted_out).message('You have been voted out', 'The people of the town have voted you out.')
@@ -257,6 +258,7 @@ class BaseGame:
         wolf_kill = self.process_actions()
 
         if self.wolf_count() > 0 and self.town_count() > self.wolf_count():
+            logging.info('Neither side has won the game')
             self.game_phase += 1
             main_phase_post = self.main_sub.submit(title=self.phase_post_title(),
                 selftext=self.phase_post_text(sorted_votes, voted_out, wolf_kill), send_replies=False)
@@ -265,16 +267,17 @@ class BaseGame:
                 selftext=self.phase_post_text(sorted_votes, voted_out, wolf_kill), send_replies=False)
             self.wolf_post_id = wolf_phase_post.id
         else:
+            logging.info('The game is over')
             self.game_phase = 'finale'
             self.wolf_sub.mod.update(subreddit_type='public')
             for user in self.confirmed_players:
                 if 'Wolf' in self.roles[user]:
                     self.wolf_sub.contributor.remove(user)
             if self.wolf_count() == 0:
-                # Town won
+                logging.info('The town has won')
                 finale_post = self.main_sub.submit(title='Finale', selftext='The last wolf {} has been voted out. The town has won!'.format(voted_out), send_replies=False)
             else:
-                # Wolves won
+                logging.info('The wolves have won')
                 finale_post = self.main_sub.submit(title='Finale', selftext='The wolves have won!', send_replies=False)
         self.votes = {}
         self.actions = {}
