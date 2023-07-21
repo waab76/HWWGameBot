@@ -192,11 +192,11 @@ class BaseGame:
 
         for comment in comments:
             if comment.created_utc > self.last_comment_time:
+                self.last_comment_time = comment.created_utc
                 player = comment.author.name.lower()
                 if player not in self.live_players and player not in ['autowolfbot', 'bourboninexile']:
                     comment.reply('Only living players are allowed to comment.')
                     comment.mod.remove()
-                    self.last_comment_time = comment.created_utc
                     continue
                 if '!vote' in comment.body.lower():
                     logging.debug('Potential vote from {} in comment {}'.format(player, comment.body.lower()))
@@ -220,7 +220,6 @@ class BaseGame:
                         logging.info('Player {} voted for {} in Phase {}'.format(player, target, self.game_phase))
                     else:
                         comment.reply('u/{} is not an active player in this game'.format(target))
-            self.last_comment_time = comment.created_utc
 
     def handle_actions(self):
         logging.debug('Processing actions for Phase {}'.format(self.game_phase))
