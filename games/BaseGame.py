@@ -200,15 +200,21 @@ class BaseGame:
                     comment.mod.remove()
                     self.last_comment_time = comment.created_utc
                     continue
+                if 'vote' in comment.body.lower():
+                    logging.info('Potential vote from {}'.format(player))
                 match = vote_pattern.match(comment.body.lower())
                 if match:
+                    logging.info('regex match, we have a legit vote attempt')
                     target = match.group(1).lower()
                     if target in self.live_players:
                         logging.info('Player {} declared a vote for {}'.format(player, target))
                         self.votes[player] = target
                         comment.reply('Recorded u/{}\'s vote for u/{} for Phase {}'.format(player, target, self.game_phase))
                     else:
+                        logging.info('Invalid vote target')
                         comment.reply('u/{} is not a valid vote target'.format(target))
+                else:
+                    logging.info('no regex match')
                 self.last_comment_time = comment.created_utc
 
     def handle_actions(self):
