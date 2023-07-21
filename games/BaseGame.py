@@ -191,6 +191,10 @@ class BaseGame:
         for comment in comments:
             if comment.created_utc > self.last_comment_time:
                 player = comment.author.name.lower()
+                if player not in self.live_players:
+                    comment.reply('Only living players are allowed to comment.')
+                    comment.mod.remove()
+                    continue
                 match = vote_pattern.match(comment.body.lower())
                 if match:
                     target = match.group(1).lower()

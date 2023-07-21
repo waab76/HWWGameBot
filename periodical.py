@@ -63,6 +63,8 @@ def main():
         update_game_data(game.get_game_data())
     elif game.game_phase == 'confirmation':
         logging.debug('Handle confirmations')
+        # TODO: Add a confirmation timeout. If folks haven't confirmed in 24 hours
+        # proceed without them confirming? Or re-send role PMs at 12 hours?
         game.handle_confirmations()
         update_game_data(game.get_game_data())
     elif game.game_phase == 'finale':
