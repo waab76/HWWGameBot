@@ -10,6 +10,7 @@ p1_main_text = '##Welcome to Phase 1!\n\n' + \
                'To submit your action, send a PM to the host bot account with the text "!target u/yourActionTarget" ' + \
                '(the subject line doesn\'t matter).\n\nFor convenience, you can use this [ACTION LINK]' + \
                '(https://www.reddit.com/message/compose/?to=shadows_producer&subject=Action&message=!target:%20u/)\n\n' + \
+               'I really should have put a phase end countdown in here... Maybe in the next bot update.\n\n' + \
                '##Good luck!'
 p1_wolf_text = p1_main_text = '##Welcome to Phase 1, wolves!\n\n' + \
                'You are now free to begin making wolfy plans.\n\n' + \
@@ -17,6 +18,7 @@ p1_wolf_text = p1_main_text = '##Welcome to Phase 1, wolves!\n\n' + \
                'To submit your action, send a PM to the host bot account with the text "!target u/yourActionTarget" ' + \
                '(the subject line doesn\'t matter).\n\nFor convenience, you can use this [ACTION LINK]' + \
                '(https://www.reddit.com/message/compose/?to=shadows_producer&subject=Action&message=!target:%20u/)\n\n' + \
+               'I really should have put a phase end countdown in here... Maybe in the next bot update.\n\n' + \
                '##Good luck!'
 
 class BaseGame:
