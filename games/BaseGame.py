@@ -193,7 +193,7 @@ class BaseGame:
         for comment in comments:
             if comment.created_utc > self.last_comment_time:
                 player = comment.author.name.lower()
-                if player not in self.live_players:
+                if player not in self.live_players and not player == 'autowolfbot':
                     comment.reply('Only living players are allowed to comment.')
                     comment.mod.remove()
                     continue
