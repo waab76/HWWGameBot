@@ -88,6 +88,15 @@ class BaseGame:
                 town_count += 1
         return town_count
 
+    def get_sorted_votes(self):
+        vote_totals = {}
+        for player in self.votes:
+            if self.votes[player] not in vote_totals:
+                vote_totals[self.votes[player]] = 1
+            else:
+                vote_totals[self.votes[player]] += 1
+        return sorted(vote_totals.items(), key=lambda x:x[1], reverse=True)
+
     def get_game_data(self):
         return {'game_type': self.game_type(),
                 'game_phase': self.game_phase,
@@ -186,7 +195,7 @@ class BaseGame:
             wolf_phase_post = self.wolf_sub.submit(title="WOLF SUB " + self.phase_post_title(), selftext=p1_wolf_text, send_replies=False)
             self.wolf_post_id = wolf_phase_post.id
 
-    def handle_votes(self):
+    def handle_main_sub_comments(self):
         logging.debug('Processing votes for Phase {}'.format(self.game_phase))
 
         submission = self.reddit.submission(self.main_post_id)
@@ -224,8 +233,14 @@ class BaseGame:
                         logging.info('Player {} voted for {} in Phase {}'.format(player, target, self.game_phase))
                     else:
                         comment.reply('u/{} is not an active player in this game'.format(target))
+                if '!table' in comment.body.lower():
+                    sorted_votes = self.get_sorted_votes
+                    vote_table = 'Player | Votes Against\n'
+                    for entry in sorted_votes:
+                        vote_table += '{} | {}\n'.format(entry[0], entry[1])
+                    comment.reply(vote_table)
 
-    def handle_actions(self):
+    def handle_private_messages(self):
         logging.debug('Processing actions for Phase {}'.format(self.game_phase))
         for message in self.reddit.inbox.unread():
             if '!target' in message.body.lower():
@@ -258,7 +273,7 @@ class BaseGame:
     def handle_commands(self):
         logging.debug('Handle in-sub commands')
 
-    def handle_wolf_kill(self):
+    def handle_wolf_sub_comments(self):
         logging.debug('Processing Wolf Kill for Phase {}'.format(self.game_phase))
         wolf_sub_post = self.reddit.submission(self.wolf_post_id)
         submission.comments.replace_more(limit=None)
@@ -309,14 +324,7 @@ class BaseGame:
         wolf_sub_post = self.reddit.submission(self.wolf_post_id)
         wolf_sub_post.mod.lock()
 
-        # Tally votes
-        vote_totals = {}
-        for player in self.votes:
-            if self.votes[player] not in vote_totals:
-                vote_totals[self.votes[player]] = 1
-            else:
-                vote_totals[self.votes[player]] += 1
-        sorted_votes = sorted(vote_totals.items(), key=lambda x:x[1], reverse=True)
+        sorted_votes = self.get_sorted_votes()
         max_votes = sorted_votes[0][1]
         tied_players = []
         for entry in sorted_votes:

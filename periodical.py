@@ -71,9 +71,9 @@ def main():
         pass
     else:
         logging.debug('Handle game phase')
-        game.handle_votes()
-        game.handle_actions()
-        game.handle_wolf_kill()
+        game.handle_main_sub_comments()
+        game.handle_wolf_sub_comments()
+        game.handle_private_messages()
         game.handle_turnover()
         update_game_data(game.get_game_data())
         update_phase_data(game.get_phase_data())
