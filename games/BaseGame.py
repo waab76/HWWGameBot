@@ -275,7 +275,7 @@ class BaseGame:
 
     def handle_wolf_sub_comments(self):
         logging.debug('Processing Wolf Kill for Phase {}'.format(self.game_phase))
-        wolf_sub_post = self.reddit.submission(self.wolf_post_id)
+        submission = self.reddit.submission(self.wolf_post_id)
         submission.comments.replace_more(limit=None)
         submission.comments_sort = "old"
         comments = submission.comments.list()
