@@ -230,12 +230,13 @@ class BaseGame:
             message.mark_read()
 
     def handle_turnover(self):
-        logging.info('Processing turnover')
+        logging.debug('Check for turnover')
         main_sub_post = self.reddit.submission(self.main_post_id)
         post_time = datetime.fromtimestamp(main_sub_post.created_utc, timezone.utc)
         if datetime.now(timezone.utc) - post_time < timedelta(hours=self.phase_length_hours):
             return()
 
+        logging.info('Processing turnover')
         # Lock the threads in the main and wolf sub
         main_sub_post.mod.lock()
         wolf_sub_post = self.reddit.submission(self.wolf_post_id)
