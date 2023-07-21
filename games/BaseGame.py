@@ -37,9 +37,11 @@ class BaseGame:
         self.live_players = [] if 'live_players' not in game_data else game_data['live_players']
         self.dead_players = [] if 'dead_players' not in game_data else game_data['dead_players']
         self.last_comment_time = 0 if 'last_comment_time' not in game_data else game_data['last_comment_time']
+        self.last_wolf_comment_time = 0 if 'last_wolf_comment_time' not in game_data else game_data['last_wolf_comment_time']
 
         self.votes = {} if 'votes' not in phase_data else phase_data['votes']
         self.actions = {} if 'actions' not in phase_data else phase_data['actions']
+        self.wolf_kill = '' if 'wolf_kill' not in phase_data else phase_data['wolf_kill']
 
         self.reddit = reddit
         self.main_sub = reddit.subreddit(self.main_sub_name)
@@ -98,11 +100,13 @@ class BaseGame:
                 'roles': self.roles,
                 'live_players': self.live_players,
                 'dead_players': self.dead_players,
-                'last_comment_time': self.last_comment_time}
+                'last_comment_time': self.last_comment_time,
+                'last_wolf_comment_time': self.last_wolf_comment_time}
 
     def get_phase_data(self):
         return {'votes': self.votes,
-                'actions': self.actions}
+                'actions': self.actions,
+                'wolf_kill': self.wolf_kill}
 
     def init_new_game(self):
         logging.info('Posting signups in {}'.format(self.main_sub.display_name))
@@ -250,6 +254,47 @@ class BaseGame:
                 else:
                     message.reply('I\'m sorry, you\'re already dead')
             message.mark_read()
+
+    def handle_commands(self):
+        logging.debug('Handle in-sub commands')
+
+    def handle_wolf_kill(self):
+        logging.debug('Processing Wolf Kill for Phase {}'.format(self.game_phase))
+        wolf_sub_post = self.reddit.submission(self.wolf_post_id)
+        submission.comments.replace_more(limit=None)
+        submission.comments_sort = "old"
+        comments = submission.comments.list()
+
+        for comment in comments:
+            if comment.created_utc > self.last_wolf_comment_time:
+                self.last_wolf_comment_time = comment.created_utc
+                player = comment.author.name.lower()
+                if player not in self.live_players and player not in ['autowolfbot', 'bourboninexile']:
+                    comment.reply('Only living players are allowed to comment.')
+                    comment.mod.remove()
+                    continue
+                if '!kill' in comment.body.lower():
+                    logging.debug('Potential kill from {} in comment {}'.format(player, comment.body.lower()))
+                    target = ''
+                    for line in comment.body.lower().split('\n'):
+                        if '!kill' in line:
+                            parts = line.split()
+                            for i in range(len(parts)):
+                                word = parts[i]
+                                if '!kill' in word:
+                                    if i + 1 < len(parts):
+                                        if parts[i+1].startswith('/u/'):
+                                            target = parts[i+1][3:]
+                                        elif parts[i+1].startswith('u/'):
+                                            target = parts[i+1][2:]
+                                        else:
+                                            target = parts[i+1]
+                    if target in self.live_players:
+                        self.wolf_kill = target
+                        comment.reply('Recorded {}\'s wolf kill for {} for Phase {}'.format(player, target, self.game_phase))
+                        logging.info('Player {} submitted kill for {} in Phase {}'.format(player, target, self.game_phase))
+                    else:
+                        comment.reply('{} is not an active player in this game'.format(target))
 
     def handle_turnover(self):
         logging.debug('Check for turnover')
