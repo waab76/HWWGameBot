@@ -9,7 +9,7 @@ p1_main_text = '##Welcome to Phase 1!\n\n' + \
                '`!vote u/AutoWolfBot`\n\n' + \
                'To submit your action, send a PM to the host bot account with the text "!target u/yourActionTarget" ' + \
                '(the subject line doesn\'t matter).\n\nFor convenience, you can use this [ACTION LINK]' + \
-               '(https://www.reddit.com/message/compose/?to=shadows_producer&subject=Action&message=!target:%20u/)\n\n' + \
+               '(https://www.reddit.com/message/compose/?to=AutoWolfBot&subject=Action&message=!target:%20u/)\n\n' + \
                'Votes and actions can be changed as many times as you want.  Only your most recent (pre-turnover) submission will count.\n\n' +\
                'I really should have put a phase end countdown in here... Maybe in the next bot update.\n\n' + \
                '##Good luck!'
@@ -18,7 +18,7 @@ p1_wolf_text = '##Welcome to Phase 1, wolves!\n\n' + \
                'Vote submission only works in the main sub. The bot does not monitor wolf sub comments.\n\n' + \
                'To submit your action, send a PM to the host bot account with the text "!target u/yourActionTarget" ' + \
                '(the subject line doesn\'t matter).\n\nFor convenience, you can use this [ACTION LINK]' + \
-               '(https://www.reddit.com/message/compose/?to=shadows_producer&subject=Action&message=!target:%20u/)\n\n' + \
+               '(https://www.reddit.com/message/compose/?to=AutoWolfBot&subject=Action&message=!target:%20u/)\n\n' + \
                'Votes and actions can be changed as many times as you want.  Only your most recent (pre-turnover) submission will count.\n\n' +\
                'I really should have put a phase end countdown in here... Maybe in the next bot update.\n\n' + \
                '##Good luck!'
