@@ -217,13 +217,13 @@ class BaseGame:
                     if target in self.live_players:
                         self.votes[player] = target
                         comment.reply('Recorded u/{}\'s vote for u/{} for Phase {}'.format(player, target, self.game_phase))
+                        logging.info('Player {} voted for {} in Phase {}'.format(player, target, self.game_phase))
                     else:
-                        comment.reply('u/{} is not a valid vote target'.format(target))
+                        comment.reply('u/{} is not an active player in this game'.format(target))
             self.last_comment_time = comment.created_utc
 
     def handle_actions(self):
         logging.debug('Processing actions for Phase {}'.format(self.game_phase))
-
         for message in self.reddit.inbox.unread():
             if '!target' in message.body.lower():
                 target = ''
@@ -247,7 +247,7 @@ class BaseGame:
                         self.actions[player] = target
                         message.reply('You have targeted u/{} for Phase {}'.format(target, self.game_phase))
                     else:
-                        message.reply('I\'m sorry, u/{} is already dead'.format(target))
+                        message.reply('I\'m sorry, u/{} is not an active player in this game'.format(target))
                 else:
                     message.reply('I\'m sorry, you\'re already dead')
             message.mark_read()
