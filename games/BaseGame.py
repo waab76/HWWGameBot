@@ -190,22 +190,22 @@ class BaseGame:
         submission.comments_sort = "old"
         comments = submission.comments.list()
 
-        vote_pattern = re.compile('.*!vote \/?u\/(\S*)')
+        vote_pattern = re.compile('.*\!vote .?u\/(\S*)')
 
         for comment in comments:
             if comment.created_utc > self.last_comment_time:
                 player = comment.author.name.lower()
-                if player not in self.live_players and not player == 'autowolfbot':
+                if player not in self.live_players and player not in ['autowolfbot', 'bourboninexile']:
                     comment.reply('Only living players are allowed to comment.')
                     comment.mod.remove()
                     self.last_comment_time = comment.created_utc
                     continue
                 if 'vote' in comment.body.lower():
-                    logging.info('Potential vote from {}'.format(player))
+                    logging.info('Potential vote from {} in comment {}'.format(player, comment.body.lower()))
                 match = vote_pattern.match(comment.body.lower())
                 if match:
                     logging.info('regex match, we have a legit vote attempt')
-                    target = match.group(1).lower()
+                    target = match.group(1)
                     if target in self.live_players:
                         logging.info('Player {} declared a vote for {}'.format(player, target))
                         self.votes[player] = target
@@ -220,7 +220,7 @@ class BaseGame:
     def handle_actions(self):
         logging.debug('Processing actions for Phase {}'.format(self.game_phase))
 
-        action_pattern = re.compile('.*!target \/?u\/(\S*)')
+        action_pattern = re.compile('.*\!target .?u\/(\S*)')
 
         for message in self.reddit.inbox.unread():
             match = action_pattern.match(message.body.lower())
