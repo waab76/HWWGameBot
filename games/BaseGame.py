@@ -206,7 +206,7 @@ class BaseGame:
                             parts = line.split()
                             for i in range(len(parts)):
                                 word = parts[i]
-                                if '!vote' == word:
+                                if '!vote' in word:
                                     if i + 1 < len(parts):
                                         if parts[i+1].startswith('/u/'):
                                             target = parts[i+1][3:]
@@ -234,7 +234,7 @@ class BaseGame:
                             parts = line.split()
                             for i in range(len(parts)):
                                 word = parts[i]
-                                if '!target' == word:
+                                if '!target' in word:
                                     if i + 1 < len(parts):
                                         if parts[i+1].startswith('/u/'):
                                             target = parts[i+1][3:]
@@ -242,7 +242,6 @@ class BaseGame:
                                             target = parts[i+1][2:]
                                         else:
                                             target = parts[i+1]
-                    target = match.group(1).lower()
                     if target in self.live_players:
                         logging.info('Player {}::{} targeting {}'.format(player, self.roles[player], target))
                         self.actions[player] = target
