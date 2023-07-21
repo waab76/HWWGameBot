@@ -196,6 +196,7 @@ class BaseGame:
                 if player not in self.live_players and not player == 'autowolfbot':
                     comment.reply('Only living players are allowed to comment.')
                     comment.mod.remove()
+                    self.last_comment_time = comment.created_utc
                     continue
                 match = vote_pattern.match(comment.body.lower())
                 if match:
