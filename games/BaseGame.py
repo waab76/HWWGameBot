@@ -202,20 +202,40 @@ class BaseGame:
                     continue
                 if 'vote' in comment.body.lower():
                     logging.info('Potential vote from {} in comment {}'.format(player, comment.body.lower()))
-                match = vote_pattern.match(comment.body.lower())
-                if match:
-                    logging.info('regex match, we have a legit vote attempt')
-                    target = match.group(1)
-                    if target in self.live_players:
-                        logging.info('Player {} declared a vote for {}'.format(player, target))
-                        self.votes[player] = target
-                        comment.reply('Recorded u/{}\'s vote for u/{} for Phase {}'.format(player, target, self.game_phase))
-                    else:
-                        logging.info('Invalid vote target')
-                        comment.reply('u/{} is not a valid vote target'.format(target))
-                else:
-                    logging.info('no regex match')
-                self.last_comment_time = comment.created_utc
+                    target = ''
+                    for line in comment.body.lower().split('\n'):
+                        if line.strip().startswith('!vote'):
+                            parts = line.split()
+                            if len(parts < 2):
+                                logging.warn('Incomplete vote')
+                                self.last_comment_time = comment.created_utc
+                                break
+                            if parts[1].startswith('/u/'):
+                                target = parts[1][3:]
+                            elif parts[1].startswith('u/'):
+                                target = parts[1][2:]
+                            else:
+                                target = parts[1]
+                            if target in self.live_players:
+                                self.votes[player] = target
+                                comment.reply('Recorded u/{}\'s vote for u/{} for Phase {}'.format(player, target, self.game_phase))
+                            else:
+                                comment.reply('u/{} is not a valid vote target'.format(target))
+
+                # match = vote_pattern.match(comment.body.lower())
+                # if match:
+                #    logging.info('regex match, we have a legit vote attempt')
+                #    target = match.group(1)
+                #    if target in self.live_players:
+                #        logging.info('Player {} declared a vote for {}'.format(player, target))
+                #        self.votes[player] = target
+                #        comment.reply('Recorded u/{}\'s vote for u/{} for Phase {}'.format(player, target, self.game_phase))
+                #    else:
+                #        logging.info('Invalid vote target')
+                #        comment.reply('u/{} is not a valid vote target'.format(target))
+                # else:
+                #    logging.info('no regex match')
+            self.last_comment_time = comment.created_utc
 
     def handle_actions(self):
         logging.debug('Processing actions for Phase {}'.format(self.game_phase))
