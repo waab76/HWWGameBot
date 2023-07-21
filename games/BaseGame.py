@@ -206,7 +206,7 @@ class BaseGame:
                     for line in comment.body.lower().split('\n'):
                         if line.strip().startswith('!vote'):
                             parts = line.split()
-                            if len(parts < 2):
+                            if len(parts) < 2:
                                 logging.warn('Incomplete vote')
                                 self.last_comment_time = comment.created_utc
                                 break
