@@ -71,10 +71,13 @@ def main():
         pass
     else:
         logging.debug('Handle game phase')
-        game.handle_main_sub_comments()
-        game.handle_wolf_sub_comments()
-        game.handle_private_messages()
-        game.handle_turnover()
+        try:
+            game.handle_main_sub_comments()
+            game.handle_wolf_sub_comments()
+            game.handle_private_messages()
+            game.handle_turnover()
+        except:
+            logging.exception('Something went wrong processing comments and turnover')
         update_game_data(game.get_game_data())
         update_phase_data(game.get_phase_data())
 
