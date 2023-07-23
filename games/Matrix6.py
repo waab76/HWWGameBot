@@ -62,6 +62,9 @@ class Matrix6(BaseGame):
             wolf_kill_align = 'the Town' if 'Town' in self.roles[wolf_kill] else 'the Wolves'
             phase_post += '{} has been killed in the night. They were affiliated with {}\n\n'.format(wolf_kill, wolf_kill_align)
 
+        phase_post += 'Living Players: {}\n\n'.format(', '.join(self.live_players))
+        phase_post += 'Dead Players: {}\n\n'.format(', '.join(self.dead_players))
+
         turnover_time = datetime.now(timezone('US/Eastern')) + timedelta(hours=self.phase_length_hours)
         iso_str = turnover_time.strftime('%Y%m%dT%H%M')
         phase_post += 'Countdown to turnover: [LINK](https://www.timeanddate.com/countdown/generic?iso={}&msg=Automated+Werewolves+Phase+End+&font=sanserif&csz=1)'.format(iso_str)
