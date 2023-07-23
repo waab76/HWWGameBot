@@ -241,7 +241,7 @@ class BaseGame:
                         comment.reply('u/{} is not an active player in this game'.format(target))
                 if '!table' in comment.body.lower():
                     sorted_votes = self.get_sorted_votes()
-                    vote_table = 'Player | Votes Against | Voters\n'
+                    vote_table = 'Player | Votes Against | Voters\n:- | :- | :-\n'
                     for entry in sorted_votes:
                         voters = ''
                         if player in self.votes:
