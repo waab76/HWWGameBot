@@ -15,8 +15,10 @@ p1_main_text = '##Welcome to Phase 1!\n\n' + \
                '##Good luck!'
 p1_wolf_text = '##Welcome to Phase 1, wolves!\n\n' + \
                'You are now free to begin making wolfy plans.\n\n' + \
-               'Vote submission only works in the main sub. The bot does not monitor wolf sub comments.\n\n' + \
-               'To submit your action, send a PM to the host bot account with the text "!target u/yourActionTarget" ' + \
+               'Vote submission only works in the main sub.\n\n' + \
+               'Night Kills can be submitted by any wolf in this sub by commenting `!kill yourKillTarget` (similar to voting). ' + \
+               'Only the last submission (by any wolf) will count and the kill will be carried out even if the wolf who submitted it gets voted out.\n\n' + \
+               'To submit an action, send a PM to the host bot account with the text "!target u/yourActionTarget" ' + \
                '(the subject line doesn\'t matter).\n\nFor convenience, you can use this [ACTION LINK]' + \
                '(https://www.reddit.com/message/compose/?to=AutoWolfBot&subject=Action&message=!target:%20u/)\n\n' + \
                'Votes and actions can be changed as many times as you want.  Only your most recent (pre-turnover) submission will count.\n\n' +\
@@ -90,6 +92,10 @@ class BaseGame:
 
     def get_sorted_votes(self):
         vote_totals = {}
+        if len(self.votes) < 1:
+            # If nobody voted, then everybody self voted
+            for player in self.live_players:
+                self.votes[player] = player
         for player in self.votes:
             if self.votes[player] not in vote_totals:
                 vote_totals[self.votes[player]] = 1
@@ -234,10 +240,14 @@ class BaseGame:
                     else:
                         comment.reply('u/{} is not an active player in this game'.format(target))
                 if '!table' in comment.body.lower():
-                    sorted_votes = self.get_sorted_votes
-                    vote_table = 'Player | Votes Against\n'
+                    sorted_votes = self.get_sorted_votes()
+                    vote_table = 'Player | Votes Against | Voters\n'
                     for entry in sorted_votes:
-                        vote_table += '{} | {}\n'.format(entry[0], entry[1])
+                        voters = ''
+                        for player in self.live_players:
+                            if self.votes[player] == entry[0]:
+                                voters += '{} '.format(player)
+                        vote_table += '{} | {} | {}\n'.format(entry[0], entry[1], voters)
                     comment.reply(vote_table)
 
     def handle_private_messages(self):

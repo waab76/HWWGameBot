@@ -179,7 +179,7 @@ class Matrix6(BaseGame):
 
         # Killer Wolf - TODO deprecate
         killer = '' if not 'Killer Wolf' in role_holders else role_holders['Killer Wolf'][0]
-        kill_target = ''
+        kill_target = '' if not len(self.wolf_kill) > 0 else self.wolf_kill
         wolf_kill = ''
         if killer in self.live_players:
             if killer in self.actions:
@@ -187,11 +187,11 @@ class Matrix6(BaseGame):
                 if not kill_target in [in_jail, doctored] and kill_target in self.live_players:
                     bulletproof = '' if not 'Bulletproof Townie' in role_holders else role_holders['Bulletproof Townie'][0]
                     if kill_target == bulletproof:
-                        logging.info('The Killer Wolf {} has hit the Bulletproof Townie {}'.format(killer, bulletproof))
+                        logging.info('The wolves have hit the Bulletproof Townie {}'.format(bulletproof))
                         self.roles[bulletproof] = 'Vanilla Town'
                         self.reddit.redditor(bulletproof).message('Close Call', 'The wolves nearly got you. That was close. You are now Vanilla Town')
                     else:
-                        logging.info('The Killer Wolf {} has killed {}'.format(killer, kill_target))
+                        logging.info('The wolves have killed {}'.format(kill_target))
                         wolf_kill = kill_target
                         self.reddit.redditor(wolf_kill).message('You Have Been Killed', 'The howling gets closer. You have been killed by the wolves.')
                         self.live_players.remove(wolf_kill)
