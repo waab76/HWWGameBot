@@ -244,10 +244,10 @@ class BaseGame:
                     vote_table = 'Player | Votes Against | Voters\n:- | :- | :-\n'
                     for entry in sorted_votes:
                         voters = ''
-                        if player in self.votes:
-                            for live in self.live_players:
-                                if self.votes[live] == entry[0]:
-                                    voters += '{} '.format(live)
+                        for player in self.live_players:
+                            if player in self.votes:
+                                if self.votes[player] == entry[0]:
+                                    voters += '{} '.format(player)
                         vote_table += '{} | {} | {}\n'.format(entry[0], entry[1], voters)
                     comment.reply(vote_table)
 
