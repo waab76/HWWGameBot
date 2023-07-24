@@ -75,7 +75,7 @@ class Matrix6(BaseGame):
         phase_post += 'To submit your action, send a PM to the host bot account with the text "!target u/yourActionTarget" ' + \
             '(the subject line doesn\'t matter).\n\nFor convenience, you can use this [ACTION LINK]' + \
             '(https://www.reddit.com/message/compose/?to=AutoWolfBot&subject=Action&message=!target:%20u/)\n\n' + \
-            'Votes and actions can be changed as many times as you want.  Only your most recent (pre-turnover) submission will count.\n\n' +\
+            'Votes and actions can be changed as many times as you want.  Only your most recent (pre-turnover) submission will count.\n\n'
 
         turnover_time = datetime.now(timezone('US/Eastern')) + timedelta(hours=self.phase_length_hours)
         iso_str = turnover_time.strftime('%Y%m%dT%H%M')
