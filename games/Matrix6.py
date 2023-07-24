@@ -23,7 +23,7 @@ class Matrix6(BaseGame):
         return 9
 
     def signup_post_title(self):
-        return "New Game Signup - Matrix6"
+        return "New Game Signup, Rules & Roles - Matrix6"
 
     def signup_post_text(self):
         return ' Welcome to a new game of Automated Werewolves!\n\n' + \
@@ -41,29 +41,41 @@ class Matrix6(BaseGame):
             '**3** | 1-Shot Bulletproof Townie | Vanilla Wolf | Town Tracker\n\n' + \
             'In addition to the roles from the table, 5 Vanilla Town and 1 Vanilla Wolf' + \
             'will be assigned.\n\n' + \
-            'Town will win by eliminating all wolves.  Wolves will win when their number equals or exceeds town.\n\n' + \
+            'Town will win by eliminating all wolves. Wolves will win when their number equals or exceeds town.\n\n' + \
             'In the event of a tie vote, one of the tied players will be randomly selected for removal.\n\n' + \
+            'Wolf kills can be performed by any living wolf via a command in the wolf sub.\n\n' + \
             'To sign up for the game, simply comment with the text `!signup`. Once 9 ' + \
             'players have signed up, role assignment PMs will go out.\n\n' + \
-            'Phase 0 will be posted once all players have confirmed their role PMs.'
+            'Phase 1 will be posted once all players have confirmed their role PMs.'
 
     def phase_post_title(self):
         return 'Phase {}'.format(self.game_phase)
 
-    def phase_post_text(self, sorted_votes, voted_out, wolf_kill):
+    def phase_post_text(self, sorted_votes, voted_out, wolf_kill, is_wolf_sub):
         phase_post = '##Phase {}\n\n'.format(self.game_phase)
-        phase_post += 'Player | Votes Against\n:- | -:\n'
-        for entry in sorted_votes:
-            phase_post += '{} | {}\n'.format(entry[0], entry[1])
-        phase_post += '\n\n'
-        voted_out_align = 'the Town' if 'Town' in self.roles[voted_out] else 'the Wolves'
-        phase_post += '{} has been voted out. They were affiliated with {}.\n\n'.format(voted_out, voted_out_align)
+        phase_post += ' -- Insert semi-randomized flavor here --\n\n'
+        if self.game_phase > 1:
+            phase_post += 'Player | Votes Against\n:- | -:\n'
+            for entry in sorted_votes:
+                phase_post += '{} | {}\n'.format(entry[0], entry[1])
+            phase_post += '\n\n'
+            voted_out_align = 'the Town' if 'Town' in self.roles[voted_out] else 'the Wolves'
+            phase_post += '{} has been voted out. They were affiliated with {}.\n\n'.format(voted_out, voted_out_align)
         if len(wolf_kill) > 0:
             wolf_kill_align = 'the Town' if 'Town' in self.roles[wolf_kill] else 'the Wolves'
             phase_post += '{} has been killed in the night. They were affiliated with {}\n\n'.format(wolf_kill, wolf_kill_align)
 
         phase_post += 'Living Players: {}\n\n'.format(', '.join(self.live_players))
         phase_post += 'Dead Players: {}\n\n'.format(', '.join(self.dead_players))
+
+        if is_wolf_sub:
+            phase_post += 'To submit your kill, include the text "!kill yourKillTarget" in a comment like so:\n\n`!kill AutoWolfBot`\n\n'
+        else:
+            phase_post += 'To submit your votes, include the text "!vote u/yourVoteTarget" in a comment like so:\n\n`!vote u/AutoWolfBot`\n\n'
+        phase_post += 'To submit your action, send a PM to the host bot account with the text "!target u/yourActionTarget" ' + \
+            '(the subject line doesn\'t matter).\n\nFor convenience, you can use this [ACTION LINK]' + \
+            '(https://www.reddit.com/message/compose/?to=AutoWolfBot&subject=Action&message=!target:%20u/)\n\n' + \
+            'Votes and actions can be changed as many times as you want.  Only your most recent (pre-turnover) submission will count.\n\n' +\
 
         turnover_time = datetime.now(timezone('US/Eastern')) + timedelta(hours=self.phase_length_hours)
         iso_str = turnover_time.strftime('%Y%m%dT%H%M')
@@ -145,6 +157,8 @@ class Matrix6(BaseGame):
             logging.info('The Town Jailkeeper {} has jailed {}'.format(keeper, in_jail))
             in_jail = self.actions[keeper]
             self.actions[in_jail] = ''
+            if self.wolf_killer in in_jail:
+                self.wolf_kill = ''
 
         # Town Seer
         seer = '' if not 'Town Seer' in role_holders else role_holders['Town Seer'][0]
@@ -173,40 +187,28 @@ class Matrix6(BaseGame):
         if tracker in self.live_players and tracker in self.actions:
             tracked = self.actions[tracker]
             if tracked in self.live_players:
-                if tracked in self.actions and not '' == self.actions[tracked]:
+                if (tracked in self.actions and not '' == self.actions[tracked]) or tracked in self.wolf_killer:
                     logging.info('The Town Tracker {} has seen {} target {}'.format(tracker, tracked, self.actions[tracked]))
                     self.reddit.redditor(tracker_target[1]).message('Tracker Result', '{}\'s Night Action target was {}'.format(tracked, self.actions[tracked]))
                 else:
                     logging.info('The Town Tracker {} did not see {} target anyone'.format(tracker, tracked))
                     self.reddit.redditor(tracker_target[1]).message('Tracker Result', '{} did not take a Night Action'.format(tracked))
 
-        # Killer Wolf - TODO deprecate
-        killer = '' if not 'Killer Wolf' in role_holders else role_holders['Killer Wolf'][0]
-        kill_target = '' if not len(self.wolf_kill) > 0 else self.wolf_kill
+        # Handle Wolf Kill
         wolf_kill = ''
-        if killer in self.live_players:
-            if killer in self.actions:
-                kill_target = self.actions[killer]
-                if not kill_target in [in_jail, doctored] and kill_target in self.live_players:
-                    bulletproof = '' if not 'Bulletproof Townie' in role_holders else role_holders['Bulletproof Townie'][0]
-                    if kill_target == bulletproof:
-                        logging.info('The wolves have hit the Bulletproof Townie {}'.format(bulletproof))
-                        self.roles[bulletproof] = 'Vanilla Town'
-                        self.reddit.redditor(bulletproof).message('Close Call', 'The wolves nearly got you. That was close. You are now Vanilla Town')
-                    else:
-                        logging.info('The wolves have killed {}'.format(kill_target))
-                        wolf_kill = kill_target
-                        self.reddit.redditor(wolf_kill).message('You Have Been Killed', 'The howling gets closer. You have been killed by the wolves.')
-                        self.live_players.remove(wolf_kill)
-                        self.dead_players.append(wolf_kill)
-        elif blocker in self.live_players:
-            logging.info('The Killer Wolf {} is dead. The Wolf Roleblocker {} is being promoted'.format(killer, blocker))
-            self.roles[blocker] = 'Wolf Killer'
-            self.send_role_pm(blocker)
-        elif 'Vanilla Wolf' in role_holders and role_holders['Vanilla Wolf'] in self.live_players:
-            nilla = role_holders['Vanilla Wolf'][0]
-            logging.info('The Killer Wolf {} is dead. The Vanilla Wolf {} is being promoted'.format(killer, nilla))
-            self.roles[nilla] = 'Vanilla Wolf'
-            self.send_role_pm(nilla)
+        if self.wolf_killer in self.live_players:
+            kill_target = '' if not len(self.wolf_kill) > 0 else self.wolf_kill
+            if not kill_target in [in_jail, doctored] and kill_target in self.live_players:
+                bulletproof = '' if not 'Bulletproof Townie' in role_holders else role_holders['Bulletproof Townie'][0]
+                if kill_target == bulletproof:
+                    logging.info('The wolves have hit the Bulletproof Townie {}'.format(bulletproof))
+                    self.roles[bulletproof] = 'Vanilla Town'
+                    self.reddit.redditor(bulletproof).message('Close Call', 'The wolves nearly got you. That was close. You are now Vanilla Town')
+                else:
+                    logging.info('The wolves have killed {}'.format(kill_target))
+                    wolf_kill = kill_target
+                    self.reddit.redditor(wolf_kill).message('You Have Been Killed', 'You keep running but the howling keeps getting closer. You have been killed by the wolves.')
+                    self.live_players.remove(wolf_kill)
+                    self.dead_players.append(wolf_kill)
 
         return wolf_kill

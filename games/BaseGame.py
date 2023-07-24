@@ -3,28 +3,6 @@ import random
 import re
 from datetime import datetime, timedelta, timezone
 
-p1_main_text = '##Welcome to Phase 1!\n\n' + \
-               'You are now free to begin having game discussions.\n\n' + \
-               'To submit your votes, simply include the text "!vote u/yourVoteTarget" in a comment like so:\n\n' + \
-               '`!vote u/AutoWolfBot`\n\n' + \
-               'To submit your action, send a PM to the host bot account with the text "!target u/yourActionTarget" ' + \
-               '(the subject line doesn\'t matter).\n\nFor convenience, you can use this [ACTION LINK]' + \
-               '(https://www.reddit.com/message/compose/?to=AutoWolfBot&subject=Action&message=!target:%20u/)\n\n' + \
-               'Votes and actions can be changed as many times as you want.  Only your most recent (pre-turnover) submission will count.\n\n' +\
-               'I really should have put a phase end countdown in here... Maybe in the next bot update.\n\n' + \
-               '##Good luck!'
-p1_wolf_text = '##Welcome to Phase 1, wolves!\n\n' + \
-               'You are now free to begin making wolfy plans.\n\n' + \
-               'Vote submission only works in the main sub.\n\n' + \
-               'Night Kills can be submitted by any wolf in this sub by commenting `!kill yourKillTarget` (similar to voting). ' + \
-               'Only the last submission (by any wolf) will count and the kill will be carried out even if the wolf who submitted it gets voted out.\n\n' + \
-               'To submit an action, send a PM to the host bot account with the text "!target u/yourActionTarget" ' + \
-               '(the subject line doesn\'t matter).\n\nFor convenience, you can use this [ACTION LINK]' + \
-               '(https://www.reddit.com/message/compose/?to=AutoWolfBot&subject=Action&message=!target:%20u/)\n\n' + \
-               'Votes and actions can be changed as many times as you want.  Only your most recent (pre-turnover) submission will count.\n\n' +\
-               'I really should have put a phase end countdown in here... Maybe in the next bot update.\n\n' + \
-               '##Good luck!'
-
 class BaseGame:
     def __init__(self, reddit, game_data, phase_data):
         logging.debug('Building game with game_data {} and phase data {}'.format(game_data, phase_data))
@@ -44,6 +22,7 @@ class BaseGame:
         self.votes = {} if 'votes' not in phase_data else phase_data['votes']
         self.actions = {} if 'actions' not in phase_data else phase_data['actions']
         self.wolf_kill = '' if 'wolf_kill' not in phase_data else phase_data['wolf_kill']
+        self.wolf_killer = '' if 'wolf_killer' not in phase_data else phase_data['wolf_killer']
 
         self.reddit = reddit
         self.main_sub = reddit.subreddit(self.main_sub_name)
@@ -121,7 +100,8 @@ class BaseGame:
     def get_phase_data(self):
         return {'votes': self.votes,
                 'actions': self.actions,
-                'wolf_kill': self.wolf_kill}
+                'wolf_kill': self.wolf_kill,
+                'wolf_killer': self.wolf_killer}
 
     def init_new_game(self):
         logging.info('Posting signups in {}'.format(self.main_sub.display_name))
@@ -196,9 +176,9 @@ class BaseGame:
                 self.live_players.append(user)
             self.dead_players = []
 
-            main_phase_post = self.main_sub.submit(title=self.phase_post_title(), selftext=p1_main_text, send_replies=False)
+            main_phase_post = self.main_sub.submit(title=self.phase_post_title(), selftext=self.phase_post_text({}, '', '', False), send_replies=False)
             self.main_post_id = main_phase_post.id
-            wolf_phase_post = self.wolf_sub.submit(title="WOLF SUB " + self.phase_post_title(), selftext=p1_wolf_text, send_replies=False)
+            wolf_phase_post = self.wolf_sub.submit(title="WOLF SUB " + self.phase_post_title(), selftext=self.phase_post_text({}, '', '', True), send_replies=False)
             self.wolf_post_id = wolf_phase_post.id
 
     def handle_main_sub_comments(self):
@@ -317,6 +297,7 @@ class BaseGame:
                                             target = parts[i+1]
                     if target in self.live_players:
                         self.wolf_kill = target
+                        self.wolf_killer = player
                         comment.reply('Recorded {}\'s wolf kill for {} for Phase {}'.format(player, target, self.game_phase))
                         logging.info('Player {} submitted kill for {} in Phase {}'.format(player, target, self.game_phase))
                     else:
@@ -360,17 +341,25 @@ class BaseGame:
                 selftext=self.phase_post_text(sorted_votes, voted_out, wolf_kill), send_replies=False)
             self.wolf_post_id = wolf_phase_post.id
         else:
+            wolves = []
             logging.info('The game is over')
             self.game_phase = 'finale'
             self.wolf_sub.mod.update(subreddit_type='public')
             for user in self.confirmed_players:
                 if 'Wolf' in self.roles[user]:
                     self.wolf_sub.contributor.remove(user)
+                    wolves.append(user)
             if self.wolf_count() == 0:
                 logging.info('The town has won')
-                finale_post = self.main_sub.submit(title='Finale', selftext='The last wolf {} has been voted out. The town has won!'.format(voted_out), send_replies=False)
+                finale_text = '##The Game is Over\n\n' + \
+                'The wolves {} have been voted out and the town has won!\n\n'.format(' and '.join(wolves)) + \
+                'The wolf sub is now open: r/{}'.format(self.wolf_sub_name)
+                finale_post = self.main_sub.submit(title='Finale', selftext=finale_text, send_replies=False)
             else:
                 logging.info('The wolves have won')
-                finale_post = self.main_sub.submit(title='Finale', selftext='The wolves have won!', send_replies=False)
+                finale_text = '##The Game is Over\n\n' + \
+                'The wolves {} have overrun the town and won!\n\n'.format(' and '.join(wolves)) + \
+                'The wolf sub is now open: r/{}'.format(self.wolf_sub_name)
+                finale_post = self.main_sub.submit(title='Finale', selftext=finale_text, send_replies=False)
         self.votes = {}
         self.actions = {}
