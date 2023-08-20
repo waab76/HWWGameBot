@@ -39,8 +39,7 @@ class Matrix6(BaseGame):
             '**1** | Town Jailkeeper | Vanilla Townie | Vanilla Wolf\n' + \
             '**2** | Wolf Roleblocker | Town Seer | Town Doctor\n' + \
             '**3** | 1-Shot Bulletproof Townie | Vanilla Wolf | Town Tracker\n\n' + \
-            'In addition to the roles from the table, 5 Vanilla Town and 1 Vanilla Wolf' + \
-            'will be assigned.\n\n' + \
+            'In addition to the roles from the table, 5 Vanilla Town and 1 Vanilla Wolf will be assigned.\n\n' + \
             'Town will win by eliminating all wolves. Wolves will win when their number equals or exceeds town.\n\n' + \
             'In the event of a tie vote, one of the tied players will be randomly selected for removal.\n\n' + \
             'Wolf kills can be performed by any living wolf via a command in the wolf sub.\n\n' + \
@@ -65,11 +64,13 @@ class Matrix6(BaseGame):
             wolf_kill_align = 'the Town' if 'Town' in self.roles[wolf_kill] else 'the Wolves'
             phase_post += '{} has been killed in the night. They were affiliated with {}\n\n'.format(wolf_kill, wolf_kill_align)
 
-        phase_post += 'Living Players: {}\n\n'.format(', '.join(self.live_players))
-        phase_post += 'Dead Players: {}\n\n'.format(', '.join(self.dead_players))
+        phase_post += 'Living Players:\n\n* {}\n\n'.format('\n* '.join(self.live_players))
+        phase_post += 'Dead Players:\n\n* {}\n\n'.format('\n* '.join(self.dead_players))
 
         if is_wolf_sub:
-            phase_post += 'To submit your kill, include the text "!kill yourKillTarget" in a comment like so:\n\n`!kill AutoWolfBot`\n\n'
+            phase_post += 'To submit the kill, include the text "!kill theKillTarget" in a comment like so:\n\n`!kill AutoWolfBot`\n\n' + \
+            'Kills may be submitted by any living wolf. The last submission will take precedence. If the wolf who submitted the kill gets ' + \
+            'voted out, the kill will not go through.\n\n'
         else:
             phase_post += 'To submit your votes, include the text "!vote u/yourVoteTarget" in a comment like so:\n\n`!vote u/AutoWolfBot`\n\n'
         phase_post += 'To submit your action, send a PM to the host bot account with the text "!target u/yourActionTarget" ' + \
