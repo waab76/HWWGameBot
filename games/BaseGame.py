@@ -1,6 +1,7 @@
 import logging
 import random
 import re
+import time
 from datetime import datetime, timedelta, timezone
 
 class BaseGame:
@@ -43,7 +44,7 @@ class BaseGame:
     def phase_post_title(self):
         raise Exception('Method [signup_post_text] must be implemented in game class')
 
-    def phase_post_text(self, sorted_votes, voted_out, wolf_kill):
+    def phase_post_text(self, sorted_votes, voted_out, wolf_kill, is_wolf_sub):
         raise Exception('Method [signup_post_text] must be implemented in game class')
 
     def assign_roles(self):
@@ -176,9 +177,14 @@ class BaseGame:
                 self.live_players.append(user)
             self.dead_players = []
 
-            main_phase_post = self.main_sub.submit(title=self.phase_post_title(), selftext=self.phase_post_text({}, '', '', False), send_replies=False)
+            for player in self.live_players:
+                self.reddit.redditor(player).message('The Game Has Started', 'All players have confirmed and the game has begun in r/AutomatedWerewolves')
+                time.sleep(6)
+
+
+            main_phase_post = self.main_sub.submit(title=self.phase_post_title(), selftext=self.phase_post_text({}, '', '', False), send_replies=False, is_wolf_sub=False)
             self.main_post_id = main_phase_post.id
-            wolf_phase_post = self.wolf_sub.submit(title="WOLF SUB " + self.phase_post_title(), selftext=self.phase_post_text({}, '', '', True), send_replies=False)
+            wolf_phase_post = self.wolf_sub.submit(title="WOLF SUB " + self.phase_post_title(), selftext=self.phase_post_text({}, '', '', True), send_replies=False, is_wolf_sub=True)
             self.wolf_post_id = wolf_phase_post.id
 
     def handle_main_sub_comments(self):
@@ -335,10 +341,10 @@ class BaseGame:
             logging.info('Neither side has won the game')
             self.game_phase += 1
             main_phase_post = self.main_sub.submit(title=self.phase_post_title(),
-                selftext=self.phase_post_text(sorted_votes, voted_out, wolf_kill), send_replies=False)
+                selftext=self.phase_post_text(sorted_votes, voted_out, wolf_kill), send_replies=False, is_wolf_sub=False)
             self.main_post_id = main_phase_post.id
             wolf_phase_post = self.wolf_sub.submit(title='WOLF SUB ' + self.phase_post_title(),
-                selftext=self.phase_post_text(sorted_votes, voted_out, wolf_kill), send_replies=False)
+                selftext=self.phase_post_text(sorted_votes, voted_out, wolf_kill), send_replies=False, is_wolf_sub=True)
             self.wolf_post_id = wolf_phase_post.id
         else:
             wolves = []
