@@ -341,10 +341,10 @@ class BaseGame:
             logging.info('Neither side has won the game')
             self.game_phase += 1
             main_phase_post = self.main_sub.submit(title=self.phase_post_title(),
-                selftext=self.phase_post_text(sorted_votes, voted_out, wolf_kill, False), send_replies=False, is_wolf_sub=False)
+                selftext=self.phase_post_text(sorted_votes, voted_out, wolf_kill, False), send_replies=False)
             self.main_post_id = main_phase_post.id
             wolf_phase_post = self.wolf_sub.submit(title='WOLF SUB ' + self.phase_post_title(),
-                selftext=self.phase_post_text(sorted_votes, voted_out, wolf_kill, True), send_replies=False, is_wolf_sub=True)
+                selftext=self.phase_post_text(sorted_votes, voted_out, wolf_kill, True), send_replies=False)
             self.wolf_post_id = wolf_phase_post.id
         else:
             wolves = []
