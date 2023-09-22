@@ -78,9 +78,9 @@ class Matrix6(BaseGame):
             '(https://www.reddit.com/message/compose/?to=AutoWolfBot&subject=Action&message=!target:%20u/)\n\n' + \
             'Votes and actions can be changed as many times as you want.  Only your most recent (pre-turnover) submission will count.\n\n'
 
-        turnover_time = datetime.now(timezone('US/Eastern')) + timedelta(hours=self.phase_length_hours)
+        turnover_time = datetime.now(timezone('GMT')) + timedelta(hours=self.phase_length_hours)
         iso_str = turnover_time.strftime('%Y%m%dT%H%M')
-        phase_post += 'Countdown to turnover: [LINK](https://www.timeanddate.com/countdown/generic?iso={}&msg=Automated+Werewolves+Phase+End+&font=sanserif&csz=1)'.format(iso_str)
+        phase_post += 'Countdown to turnover: [LINK](https://www.timeanddate.com/countdown/generic?iso={}&msg=Automated+Werewolves+Phase+End+&font=sanserif)'.format(iso_str)
 
         return phase_post
 
