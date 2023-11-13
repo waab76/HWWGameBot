@@ -78,9 +78,9 @@ class Matrix6(BaseGame):
             '(https://www.reddit.com/message/compose/?to=AutoWolfBot&subject=Action&message=!target:%20u/)\n\n' + \
             'Votes and actions can be changed as many times as you want.  Only your most recent (pre-turnover) submission will count.\n\n'
 
-        turnover_time = datetime.now(timezone('GMT')) + timedelta(hours=self.phase_length_hours)
+        turnover_time = datetime.now(timezone('US/Eastern')) + timedelta(hours=self.phase_length_hours)
         iso_str = turnover_time.strftime('%Y%m%dT%H%M')
-        phase_post += 'Countdown to turnover: [LINK](https://www.timeanddate.com/countdown/generic?iso={}&msg=Automated+Werewolves+Phase+End+&font=sanserif)'.format(iso_str)
+        phase_post += 'Countdown to turnover: [LINK](https://www.timeanddate.com/countdown/generic?iso={}&p0=179&msg=Automated+Werewolves+Phase+End+&font=sanserif)'.format(iso_str)
 
         return phase_post
 
@@ -179,21 +179,23 @@ class Matrix6(BaseGame):
         doc = '' if not 'Town Doctor' in role_holders else role_holders['Town Doctor'][0]
         doctored = ''
         if doc in self.live_players and doc in self.actions:
-            if len(doctored) > 0:
-                logging.info('The Town Doctor {} has protected {}'.format(doc, doctored))
-                doctored = self.actions[doc]
+            doctored = self.actions[doc]
+            logging.info('The Town Doctor {} has protected {}'.format(doc, doctored))
 
         # Town Tracker
         tracker = '' if not 'Town Tracker' in role_holders else role_holders['Town Tracker'][0]
         if tracker in self.live_players and tracker in self.actions:
             tracked = self.actions[tracker]
             if tracked in self.live_players:
-                if (tracked in self.actions and not '' == self.actions[tracked]) or tracked in self.wolf_killer:
+                if (tracked in self.wolf_killer):
+                    logging.info('The Town Tracker {} has seen {} kill {}'.format(tracker, tracked, self.wolf_kill))
+                    self.reddit.redditor(tracker).message('Tracker Result', '{}\'s Night Action target was {}'.format(tracked, self.wolf_kill))
+                elif (tracked in self.actions and not '' == self.actions[tracked]) or tracked in self.wolf_killer:
                     logging.info('The Town Tracker {} has seen {} target {}'.format(tracker, tracked, self.actions[tracked]))
-                    self.reddit.redditor(tracker_target[1]).message('Tracker Result', '{}\'s Night Action target was {}'.format(tracked, self.actions[tracked]))
+                    self.reddit.redditor(tracker).message('Tracker Result', '{}\'s Night Action target was {}'.format(tracked, self.actions[tracked]))
                 else:
                     logging.info('The Town Tracker {} did not see {} target anyone'.format(tracker, tracked))
-                    self.reddit.redditor(tracker_target[1]).message('Tracker Result', '{} did not take a Night Action'.format(tracked))
+                    self.reddit.redditor(tracker).message('Tracker Result', '{} did not take a Night Action'.format(tracked))
 
         # Handle Wolf Kill
         wolf_kill = ''

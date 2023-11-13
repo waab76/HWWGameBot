@@ -2,7 +2,8 @@ import logging
 import random
 import re
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, time, timedelta, timezone
+from pytz import timezone
 
 class BaseGame:
     def __init__(self, reddit, game_data, phase_data):
@@ -139,6 +140,9 @@ class BaseGame:
             # lock signups
             submission.mod.lock()
             self.game_phase = 'confirmation'
+            # self.main_sub.mod.update(subreddit_type='restricted')
+            # for user in self.confirmed_players:
+            #    self.main_sub.contributor.add(user)
             confirmation_post = self.main_sub.submit(title='Confirmation Phase',
                 selftext='Role PMs are being sent. Feel free to chat amongst yourselves while we wait for everyone to confirm. Game talk is not allowed.',
                 send_replies=False)
@@ -166,7 +170,8 @@ class BaseGame:
                     self.confirmed_players.append(player)
             message.mark_read()
 
-        if len(self.confirmed_players) == self.player_limit():
+        if len(self.confirmed_players) == self.player_limit() and
+            (datetime.now(timezone('US/Eastern')).time(19, 59) >= time()) and (datetime.now(timezone('US/Eastern')).time() <= time(20, 01)):
             self.game_phase = 1
 
             # Set the wolf sub to private and add the wolves
@@ -180,7 +185,6 @@ class BaseGame:
             for player in self.live_players:
                 self.reddit.redditor(player).message('The Game Has Started', 'All players have confirmed and the game has begun in r/AutomatedWerewolves')
                 time.sleep(6)
-
 
             main_phase_post = self.main_sub.submit(title=self.phase_post_title(), selftext=self.phase_post_text({}, '', '', False), send_replies=False,)
             self.main_post_id = main_phase_post.id
@@ -312,8 +316,8 @@ class BaseGame:
     def handle_turnover(self):
         logging.debug('Check for turnover')
         main_sub_post = self.reddit.submission(self.main_post_id)
-        post_time = datetime.fromtimestamp(main_sub_post.created_utc, timezone.utc)
-        if datetime.now(timezone.utc) - post_time < timedelta(hours=self.phase_length_hours):
+        post_time = datetime.fromtimestamp(main_sub_post.created_utc, timezone('GMT'))
+        if datetime.now(timezone('GMT')) - post_time < timedelta(hours=self.phase_length_hours):
             return()
 
         logging.info('Processing turnover')
