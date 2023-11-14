@@ -170,8 +170,7 @@ class BaseGame:
                     self.confirmed_players.append(player)
             message.mark_read()
 
-        if len(self.confirmed_players) == self.player_limit() and
-            (datetime.now(timezone('US/Eastern')).time(19, 59) >= time()) and (datetime.now(timezone('US/Eastern')).time() <= time(20, 01)):
+        if len(self.confirmed_players) == self.player_limit() and (datetime.now(timezone('US/Eastern')).time(19, 59) >= time()) and (datetime.now(timezone('US/Eastern')).time() <= time(20, 01)):
             self.game_phase = 1
 
             # Set the wolf sub to private and add the wolves
