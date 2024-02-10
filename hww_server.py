@@ -46,6 +46,24 @@ active_phase_fname = 'database/active_phase.json'
 active_game = {}
 active_phase = {}
 
+@app.route('/new-game/', methods=['POST'])
+def reset_game():
+    """
+    Reset the HWW game
+    """
+
+    global active_game
+    global active_phase
+
+    if request.method == 'POST':
+        active_game = {'game_type': 'matrix6'}
+        json_helper.dump(active_game, active_game_fname)
+        return(jsonify(active_game))
+    else:
+        logging.error('DAFUQ request')
+        abort(400)
+
+
 @app.route('/phase-data/', methods=['GET', 'POST'])
 def phase_data():
     """
