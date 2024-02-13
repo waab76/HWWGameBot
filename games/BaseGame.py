@@ -2,7 +2,7 @@ import logging
 import random
 import re
 from time import sleep
-from datetime import datetime, time, timedelta, timezone
+from datetime import datetime, time, timedelta
 from pytz import timezone
 
 class BaseGame:
@@ -170,7 +170,7 @@ class BaseGame:
                     self.confirmed_players.append(player)
             message.mark_read()
 
-        if len(self.confirmed_players) == self.player_limit():# and (datetime.now(timezone('US/Eastern')).time(19, 59) <= time()) and (datetime.now(timezone('US/Eastern')).time() >= time(22, 59)):
+        if len(self.confirmed_players) == self.player_limit() and (time(19, 59) <= datetime.now(timezone('US/Eastern')).time() <= time(22, 59)):
             logging.info('All players confirmed, starting game')
             self.game_phase = 1
 
@@ -184,16 +184,17 @@ class BaseGame:
                 self.live_players.append(user)
             self.dead_players = []
 
-            for player in self.live_players:
-                self.reddit.redditor(player).message('The Game Has Started', 'All players have confirmed and the game has begun in r/AutomatedWerewolves')
-                sleep(6)
-
             main_phase_post = self.main_sub.submit(title=self.phase_post_title(), selftext=self.phase_post_text({}, '', '', False), send_replies=False,)
             logging.info('Phase posted in main sub')
             self.main_post_id = main_phase_post.id
             wolf_phase_post = self.wolf_sub.submit(title="WOLF SUB " + self.phase_post_title(), selftext=self.phase_post_text({}, '', '', True), send_replies=False)
             logging.info('Phase posted in wolf sub')
             self.wolf_post_id = wolf_phase_post.id
+
+            for player in self.live_players:
+                sleep(45)
+                logging.info('Notifying {}'.format(player))
+                self.reddit.redditor(player).message('The Game Has Started', 'All players have confirmed and the game has begun in r/AutomatedWerewolves')
 
     def handle_main_sub_comments(self):
         logging.debug('Processing votes for Phase {}'.format(self.game_phase))
