@@ -192,7 +192,7 @@ class BaseGame:
             self.wolf_post_id = wolf_phase_post.id
 
             for player in self.live_players:
-                sleep(45)
+                sleep(30)
                 logging.info('Notifying {}'.format(player))
                 self.reddit.redditor(player).message('The Game Has Started', 'All players have confirmed and the game has begun in r/AutomatedWerewolves')
 
