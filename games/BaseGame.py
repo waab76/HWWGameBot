@@ -170,7 +170,7 @@ class BaseGame:
                     self.confirmed_players.append(player)
             message.mark_read()
 
-        if len(self.confirmed_players) == self.player_limit() and (datetime.now(timezone('US/Eastern')).time(19, 59) <= time()) and (datetime.now(timezone('US/Eastern')).time() >= time(22, 59)):
+        if len(self.confirmed_players) == self.player_limit():# and (datetime.now(timezone('US/Eastern')).time(19, 59) <= time()) and (datetime.now(timezone('US/Eastern')).time() >= time(22, 59)):
             logging.info('All players confirmed, starting game')
             self.game_phase = 1
 
