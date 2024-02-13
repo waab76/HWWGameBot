@@ -170,14 +170,17 @@ class BaseGame:
                     self.confirmed_players.append(player)
             message.mark_read()
 
-        if len(self.confirmed_players) == self.player_limit() and (datetime.now(timezone('US/Eastern')).time(19, 59) >= time()) and (datetime.now(timezone('US/Eastern')).time() <= time(20, 1)):
+        if len(self.confirmed_players) == self.player_limit() and (datetime.now(timezone('US/Eastern')).time(19, 59) <= time()) and (datetime.now(timezone('US/Eastern')).time() >= time(22, 59)):
+            logging.info('All players confirmed, starting game')
             self.game_phase = 1
 
             # Set the wolf sub to private and add the wolves
             self.wolf_sub.mod.update(subreddit_type='private')
+            logging.info('Wolf sub set to private')
             for user in self.confirmed_players:
                 if 'Wolf' in self.roles[user]:
                     self.wolf_sub.contributor.add(user)
+                    logging.info('{} added to wolf sub'.format(user))
                 self.live_players.append(user)
             self.dead_players = []
 
@@ -186,8 +189,10 @@ class BaseGame:
                 time.sleep(6)
 
             main_phase_post = self.main_sub.submit(title=self.phase_post_title(), selftext=self.phase_post_text({}, '', '', False), send_replies=False,)
+            logging.info('Phase posted in main sub')
             self.main_post_id = main_phase_post.id
             wolf_phase_post = self.wolf_sub.submit(title="WOLF SUB " + self.phase_post_title(), selftext=self.phase_post_text({}, '', '', True), send_replies=False)
+            logging.info('Phase posted in wolf sub')
             self.wolf_post_id = wolf_phase_post.id
 
     def handle_main_sub_comments(self):
