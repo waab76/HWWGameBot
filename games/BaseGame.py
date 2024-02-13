@@ -1,7 +1,7 @@
 import logging
 import random
 import re
-import time
+from time import sleep
 from datetime import datetime, time, timedelta, timezone
 from pytz import timezone
 
@@ -186,7 +186,7 @@ class BaseGame:
 
             for player in self.live_players:
                 self.reddit.redditor(player).message('The Game Has Started', 'All players have confirmed and the game has begun in r/AutomatedWerewolves')
-                time.sleep(6)
+                sleep(6)
 
             main_phase_post = self.main_sub.submit(title=self.phase_post_title(), selftext=self.phase_post_text({}, '', '', False), send_replies=False,)
             logging.info('Phase posted in main sub')
