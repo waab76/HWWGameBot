@@ -378,3 +378,5 @@ class BaseGame:
                 finale_post = self.main_sub.submit(title='Finale', selftext=finale_text, send_replies=False)
         self.votes = {}
         self.actions = {}
+        self.wolf_kill = ''
+        self.wolf_killer = ''

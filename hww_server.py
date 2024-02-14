@@ -58,6 +58,8 @@ def reset_game():
     if request.method == 'POST':
         active_game = {'game_type': 'matrix6'}
         json_helper.dump(active_game, active_game_fname)
+        active_phase = {}
+        json_helper.dump(active_phase, active_phase_fname)
         return(jsonify(active_game))
     else:
         logging.error('DAFUQ request')
